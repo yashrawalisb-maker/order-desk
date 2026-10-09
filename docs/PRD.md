@@ -513,3 +513,21 @@ Every step is recorded silently in the retailer profile (credit and payments).
 - **Three tabs:** Orders · Money · Retailers. "Live order" is a button on Orders; history search lives in Money.
 - **Orders is a deck:** one full-height card per order (who, what they sent, items, total, at most two chips, one button) with an "Order 2 of 4" counter, and an end card linking to today's done orders.
 - **Less text everywhere:** the Approved screen is three rows plus Send; retailer profile sections fold, with the key fact in each header; the desktop side panel shows the headline and step names only. Flag reasons and learning texts are unchanged.
+
+## 14. Information hierarchy
+
+Every screen has one job, one primary action, and information ranked by whether Rajesh needs it for that action. Anything below "secondary" sits behind a tap.
+
+| Screen | Job | Primary action | Primary info | Secondary | Behind a tap |
+|---|---|---|---|---|---|
+| Sign in | Get in | Send OTP / Verify | Phone number | — | — |
+| Orders card | Decide if this order needs him | Review order | Retailer, total, the named problem ("Surf Excel 1kg · unusual qty", "₹42,300 overdue") | Items and quantities, what was sent | Channel, time, owner, area; done orders (end card) |
+| Draft PO | Fix what needs him, then approve | Approve PO (locked until checks are done) | "Needs you": credit flag, growth nudge, flagged and unclear lines with their reasons | Lines that look fine, as compact rows; the original message | Full voice transcript |
+| Approved | Send | Send invoice and link | PO number, who it goes to | Invoice, PO, payment link as rows | Documents, WhatsApp preview |
+| Live order | Try a real order | Draft the PO | Retailer choice, order text | Their usual order | — |
+| Money | Get overdue money back | Ship the waiting order against a part-payment, or hand off | Overdue retailer, amount, days late | Unpaid by age; recovered this week | What the recovery agent receives; all invoices (search) |
+| Invoice | Track to paid | Hand off / payment (simulated) | Amount still due, status | Timeline | Documents, retailer profile, hand-off pack |
+| Retailers | Spot who needs attention | Open a retailer | "Needs attention" group: risk label | Days to pay, unpaid | Everything else in the profile |
+| Retailer profile | Judge credit before shipping | Act on the overdue card | Risk banner and why | Ordering, payments (folded, key fact in the header) | What the desk knows, invoices |
+
+Rule for new screens: name the job and the primary action first; give the primary info the top of the screen; fold anything a first-time look doesn't need.

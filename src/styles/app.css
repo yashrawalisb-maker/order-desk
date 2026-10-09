@@ -446,3 +446,12 @@ details.card.handoff summary{font-size:13.5px}
 .dc-items b{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
 .dc-items .more{color:var(--ink-3);font-size:13px}
 .dc-why{margin:12px 0 0;color:var(--ink-2);font-size:14px}
+/* compact order lines */
+.lrows{padding:2px 12px}
+.lrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.lrow:last-child{border-bottom:0}
+.lrow-main{flex:1;min-width:0;display:flex;flex-direction:column}
+.lrow-main b{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lrow-main small{font-size:12.5px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.lrow-main q.hand{font-family:var(--hand);color:var(--pen-ui);font-size:14px}
+.lrow .stepper span{min-width:64px}

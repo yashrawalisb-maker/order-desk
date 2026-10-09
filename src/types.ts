@@ -102,6 +102,8 @@ export interface Order {
   stopReason?: string | null;
   /** Held until the retailer pays part of an overdue invoice */
   release?: { invoice: string; amount: number; sentOn: string } | null;
+  /** Lines that needed Rajesh when the PO screen first opened (indexes); fixed so nothing jumps */
+  attention?: number[] | null;
   /** Line display order, fixed when the PO screen first opens */
   viewOrder?: number[] | null;
 }

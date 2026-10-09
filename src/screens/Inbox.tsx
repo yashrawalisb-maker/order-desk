@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type Dispatch } from 'react';
 import { CAT, RETAILERS } from '../data/seed';
-import { isOpen, openFlags, pendingLow, rs, total, unitStr, unmatched } from '../lib/money';
+import { isOpen, issuesOf, rs, total, unitStr } from '../lib/money';
 import { duesOf } from '../lib/receivables';
 import type { Action, State } from '../state/store';
 import type { Order } from '../types';
@@ -14,8 +14,9 @@ function chips(S: State, o: Order): { t: string; tone: string }[] {
   const out: { t: string; tone: string }[] = [];
   const dues = o.orderFlag && !o.orderFlag.resolved ? duesOf(S.invoices, o.retailer).amount : 0;
   if (dues) out.push({ t: `${rs(dues)} overdue`, tone: 'red' });
-  const check = openFlags(o) - (dues ? 1 : 0) + pendingLow(o) + unmatched(o);
-  if (check) out.push({ t: `${check} to check`, tone: 'amber' });
+  const issues = issuesOf(o);
+  if (issues.length) out.push({ t: issues[0].label, tone: 'amber' });
+  if (issues.length > 1) out.push({ t: `+${issues.length - 1} more`, tone: 'amber' });
   if (!out.length) out.push({ t: o.live ? 'Drafted live' : 'Ready to approve', tone: o.live ? '' : 'green' });
   return out.slice(0, 2);
 }

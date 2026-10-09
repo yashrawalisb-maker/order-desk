@@ -1,12 +1,12 @@
 import { CAT, RETAILERS } from '../data/seed';
 import { orderFlagView } from '../lib/flags';
-import { pendingLow, rs, total, unmatched, viewOrderFor } from '../lib/money';
+import { attentionFor, pendingLow, rs, total, unmatched, viewOrderFor } from '../lib/money';
 import { duesOf } from '../lib/receivables';
 import type { Order } from '../types';
 import { BackButton, Frame, Title, type ScreenProps } from '../components/Chrome';
 import { FlagCard, Resolved } from '../components/FlagCard';
 import { I, chName } from '../components/icons';
-import { LineCard } from '../components/LineCard';
+import { LineCard, LineRow } from '../components/LineCard';
 import { Source } from '../components/Source';
 
 export function DraftPO({ S, dispatch, o }: ScreenProps & { o: Order }) {
@@ -15,6 +15,16 @@ export function DraftPO({ S, dispatch, o }: ScreenProps & { o: Order }) {
   const order = o.viewOrder ?? viewOrderFor(o);
   const g = o.gap ? CAT[o.gap.sku] : null;
   const dues = duesOf(S.invoices, o.retailer);
+  const attention = new Set(o.attention ?? attentionFor(o));
+  const top = order.filter((i) => attention.has(i));
+  const rest = order.filter((i) => !attention.has(i));
+  const creditOpen = !!o.orderFlag && !o.orderFlag.resolved && dues.amount > 0;
+  const gapOpen = !!o.gap && !o.gap.resolved;
+  const hasTop = top.length > 0 || !!o.orderFlag || !!o.gap;
+  const openCount = (creditOpen ? 1 : 0) + (gapOpen ? 1 : 0) + top.filter((i) => {
+    const l = o.lines[i];
+    return !l.sku || (l.conf === 'low' && !l.confirmed) || (l.flag && !l.flag.resolved);
+  }).length;
 
   return (
     <Frame
@@ -37,7 +47,7 @@ export function DraftPO({ S, dispatch, o }: ScreenProps & { o: Order }) {
         <Source o={o} playing={S.playing === o.id} dispatch={dispatch} />
       </div>
 
-      <div className="pohead"><h2>Draft purchase order</h2><span>{o.lines.length} lines</span></div>
+      {hasTop && <div className="pohead"><h2>{openCount ? `Needs you · ${openCount}` : 'All checked'}</h2></div>}
 
       {o.orderFlag && (o.orderFlag.resolved ? (
         <Resolved text={o.orderFlag.resolved} className="orderflag" />
@@ -63,7 +73,16 @@ export function DraftPO({ S, dispatch, o }: ScreenProps & { o: Order }) {
         />
       ))}
 
-      {order.map((i) => <LineCard key={i} o={o} l={o.lines[i]} i={i} dispatch={dispatch} />)}
+      {top.map((i) => <LineCard key={i} o={o} l={o.lines[i]} i={i} dispatch={dispatch} />)}
+
+      {rest.length > 0 && (
+        <>
+          <div className="pohead"><h2>Order · {rest.length} line{rest.length === 1 ? '' : 's'}</h2></div>
+          <div className="card rows lrows">
+            {rest.map((i) => <LineRow key={i} o={o} l={o.lines[i]} i={i} dispatch={dispatch} />)}
+          </div>
+        </>
+      )}
       {!o.lines.length && <div className="empty">No lines left on this order.</div>}
     </Frame>
   );

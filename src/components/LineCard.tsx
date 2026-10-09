@@ -82,3 +82,25 @@ export function LineCard({ o, l, i, dispatch }: { o: Order; l: Line; i: number; 
     </div>
   );
 }
+
+/** A line that needs nothing from Rajesh: one compact row inside the order card. */
+export function LineRow({ o, l, i, dispatch }: { o: Order; l: Line; i: number; dispatch: Dispatch<Action> }) {
+  const c = CAT[l.sku!];
+  return (
+    <div className="lrow">
+      <div className="lrow-main">
+        <b>{c.name}</b>
+        <small>
+          {rs(amt(l))}
+          {l.rate != null && l.rate !== c.rate ? ' · rate honoured' : ''}
+          {l.flag?.resolved ? ` · ${l.flag.resolved}` : ''} · <q className={o.channel === 'chit' ? 'hand' : ''}>{l.heard}</q>
+        </small>
+      </div>
+      <div className="stepper">
+        <button onClick={() => dispatch({ type: 'qty', i, d: -1 })} aria-label={`Fewer ${c.short}`}>−</button>
+        <span aria-live="polite">{l.qty} {unitStr(c.unit, l.qty)}</span>
+        <button onClick={() => dispatch({ type: 'qty', i, d: 1 })} aria-label={`More ${c.short}`}>+</button>
+      </div>
+    </div>
+  );
+}

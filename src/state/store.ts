@@ -1,6 +1,6 @@
 import { CAT, PO_SEQ_START, RETAILERS, SEED_LEARNED, SEED_ORDERS, seedInvoices } from '../data/seed.js';
 import { flagView, orderFlagView } from '../lib/flags.js';
-import { rateOf, rs, total, unitStr, viewOrderFor } from '../lib/money.js';
+import { attentionFor, rateOf, rs, total, unitStr, viewOrderFor } from '../lib/money.js';
 import { releaseTarget } from '../lib/overdue.js';
 import { daysBetween, duesOf, fmtShort, invRemaining, invState, invTotal, today } from '../lib/receivables.js';
 import type { FlagAction, Invoice, Learned, Line, Order, Session, Topic } from '../types.js';
@@ -238,6 +238,7 @@ export function reducer(prev: State, a: Action): State {
       const t = S.orders.find((x) => x.id === a.id);
       if (!t) break;
       if (t.status === 'draft' && !t.viewOrder) t.viewOrder = viewOrderFor(t);
+      if (t.status === 'draft' && !t.attention) t.attention = attentionFor(t);
       // Coming back from the Approved screen returns to the same draft, not a deeper stack.
       if (S.view.name === 'approved' && S.view.id === t.id) {
         S.view = openView(t);
@@ -292,6 +293,7 @@ export function reducer(prev: State, a: Action): State {
     case 'drop':
       o!.lines.splice(a.i, 1);
       o!.viewOrder = viewOrderFor(o!);
+      o!.attention = attentionFor(o!);
       break;
     case 'stop':
       S.sheet = 'stop';
@@ -427,6 +429,7 @@ export function reducer(prev: State, a: Action): State {
       break;
     case 'liveAdd':
       a.order.viewOrder = viewOrderFor(a.order);
+      a.order.attention = attentionFor(a.order);
       S.orders.unshift(a.order);
       S.live = { ...S.live, busy: false, text: '', error: '' };
       // The draft replaces the form, so Back returns to where the live order was started.

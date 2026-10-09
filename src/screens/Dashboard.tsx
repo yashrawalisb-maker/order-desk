@@ -43,21 +43,16 @@ export function Dashboard({ S, dispatch }: ScreenProps) {
   const bucketLabel = BUCKETS.find((b) => b.id === filter)?.label;
 
   return (
-    <Frame bar={<Title h="Money" sub={`${rs(R.outstanding)} outstanding across ${R.outCount} invoices`} />} bottom={<TabBar S={S} dispatch={dispatch} />}>
-      <div className="kpis">
-        <div className="kpi"><span className="k-label">Overdue</span><span className="k-val">{rs(R.overdue)}</span></div>
-        <div className="kpi"><span className="k-label">Recovered, 7 days</span><span className="k-val">{rs(R.recovered7)}</span></div>
-      </div>
-
+    <Frame bar={<Title h="Money" sub={`${rs(R.overdue)} overdue · ${rs(R.recovered7)} recovered this week`} />} bottom={<TabBar S={S} dispatch={dispatch} />}>
       {cases.length > 0 && (
         <>
-          <div className="pohead"><h2>Overdue</h2><span>{cases.length}</span></div>
+          <div className="pohead" style={{ marginTop: 0 }}><h2>Overdue</h2><span>{cases.length}</span></div>
           {cases.map((c) => <OverdueCard key={c.inv.no} c={c} dispatch={dispatch} />)}
         </>
       )}
 
       <section className="card" aria-labelledby="aging-h">
-        <h2 id="aging-h">Unpaid by age</h2>
+        <h2 id="aging-h">Unpaid by age <span className="muted-s">{rs(R.outstanding)}</span></h2>
         <div className="bars">
           {BUCKETS.map((b) => {
             const v = R.aging[b.id];

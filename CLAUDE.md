@@ -8,6 +8,7 @@ The full spec is `docs/PRD.md`. This file condenses the parts you need on every 
 - The API key stays server-side (`api/draft.ts`, env `ANTHROPIC_API_KEY`). Never import the SDK in `src/`.
 - The chit stays CSS-rendered paper, never a stock image.
 - The AI only suggests. It never changes a rate or refuses credit; both are flags with a human choice. Invoice, payment link and echo are not AI and must not be labelled as AI.
+- Every screen follows the information hierarchy in PRD section 14: one job, one primary action, primary info on top, the rest folded.
 - Run `npm test` and `npm run build` before committing.
 
 ## Layout

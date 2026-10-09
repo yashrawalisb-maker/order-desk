@@ -57,7 +57,7 @@ export function StoryPanel({ S, dispatch }: ScreenProps) {
       </ol>
       {S.learned.length > 0 && (
         <>
-          <h4>Learned so far</h4>
+          <h3 className="lh">Learned so far</h3>
           {S.learned.slice(-3).reverse().map((x, i) => <p key={S.learned.length - i} className="lrn">{x.t}</p>)}
         </>
       )}

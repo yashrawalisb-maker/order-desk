@@ -75,7 +75,7 @@ export const fresh = (): State => ({
   toastSeq: 0,
   pulse: 0,
   playing: null,
-  wk: { within: 41, total: 49 },
+  wk: { within: 21, total: 25 },
   money: { leak: 2140, held: 0, asked: 0 },
   poSeq: PO_SEQ_START,
   live: { retailer: 'sharma', text: '', busy: false, error: '' },

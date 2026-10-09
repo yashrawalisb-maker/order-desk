@@ -84,7 +84,7 @@ Six screens inside one phone-sized app shell (app bar, scrolling body, bottom ba
 ### 4.2 Inbox (Orders tab)
 
 1. Money headline, brand-blue card: large rupee figure of money protected this week, with copy "protected this week: wrong rates caught, risky credit held." If the user has asked about a missing usual item, append "And ₹X of usual items asked about." Starts at ₹2,140 and grows with actions (section 5.6).
-2. Secondary line: "84% of orders approved within an hour", right-aligned "31% before Order Desk". The 84% is 41 of 49; each Send adds one to both.
+2. Secondary line: "84% of orders approved within an hour", right-aligned "31% before Order Desk". The 84% is 21 of 25; each Send adds one to both, so one Send makes it 85% (22 of 26).
 3. "Needs you" section: open orders (status draft or human), newest first. Then "Done today": approved, held, stopped, handled orders, dimmed.
 4. Order card: channel icon in a circle (mic, chit, speech bubble, phone, camera), retailer name, time, one-line preview of the raw message (for a chit: "Chit photo, 4 lines"), then status chips: "Draft ready" (blue) plus "N to check" (amber) for open flags plus "N unclear" (amber) for low-confidence lines; "Couldn't read it" (red); "Invoiced 8:52 am" (green); "On hold: reason" or "Stopped: reason" (grey); "Drafted live" (grey) for live orders.
 5. Tap a card: draft opens the PO screen, human opens the failure screen, everything else opens the read-only done screen.
@@ -387,7 +387,7 @@ The look should read as a tool a distributor would trust on his phone: clean, li
 | --bg | #E4E9F1 | #070B14 | Desktop page behind the phone |
 | --app | #F4F6FA | #0F1624 | App background |
 | --surface | #FFFFFF | #182133 | Cards, bars |
-| --ink / --ink-2 / --ink-3 | #0E1B33 / #47556F / #7F8BA0 | #E8EDF6 / #A7B2C6 / #6F7B92 | Text, secondary, tertiary |
+| --ink / --ink-2 / --ink-3 | #0E1B33 / #47556F / #5C687E | #E8EDF6 / #A7B2C6 / #8A96AC | Text, secondary, tertiary |
 | --line | #DCE2EB | #29344A | Borders |
 | --brand / --brand-soft | #1F5FE0 / #E5EDFD | #6B97FF / #1A2A4D | Primary actions, growth nudge |
 | --amber / --amber-soft | #9A5B00 / #FFF2D6 | #F3B85A / #33270F | Flags, low-confidence |

@@ -20,7 +20,7 @@ The full spec is `docs/PRD.md`. This file condenses the parts you need on every 
 ## Data (PRD section 5)
 - Rates include GST, per selling unit. Units: case/cases, box/boxes, bag/bags, pkt/pkts, carton/cartons, dozen/dozen, strip/strips.
 - Numbering: PO `PO GD/24-25/119` counting up from 118; invoice `INV-` 2400 + sequence; link `rzp.io/rzp/` + 6 random lowercase alphanumerics, set once at first approval.
-- Counters: `wk` 41/49, +1 each per Send. `money.leak` 2,140 (+ list minus quoted × qty on "Keep list rate"); `money.held` (+ order total on "Hold and call"); `money.asked` (+ item rate on "Ask in the echo"). Headline = leak + held.
+- Counters: `wk` 21/25, +1 each per Send (84% to 85% after one Send). `money.leak` 2,140 (+ list minus quoted × qty on "Keep list rate"); `money.held` (+ order total on "Hold and call"); `money.asked` (+ item rate on "Ask in the echo"). Headline = leak + held.
 
 ## AI behaviour (PRD section 6)
 - Flag types: `odd_quantity` (Keep N / Make it usual-max), `new_item` (one button per candidate SKU, or Looks right), `price_mismatch` (Keep list rate / Honour quoted, always computed in code), order-level `credit` (Ship anyway / Hold and call, always added in code when dues exist), low confidence (one button per candidate quantity), `gap` growth nudge (Ask in the echo / Skip).

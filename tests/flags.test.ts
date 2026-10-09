@@ -51,7 +51,7 @@ describe('Sharma flow', () => {
 
     s = run(s, { type: 'send' });
     expect(order(s, 'o1').status).toBe('approved');
-    expect(Math.round((100 * s.wk.within) / s.wk.total)).toBe(84); // 42/50
+    expect(Math.round((100 * s.wk.within) / s.wk.total)).toBe(85); // 22/26
     expect(s.money.asked).toBe(1080);
     expect(s.toast?.t).toBe('Invoice INV-2519 and payment link sent to Sharma Kirana Store with an order echo.');
   });

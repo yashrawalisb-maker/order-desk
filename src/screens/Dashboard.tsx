@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { RETAILERS } from '../data/seed';
 import { rs } from '../lib/money';
-import { BUCKETS, bucketOf, duesOf, invState, invTotal, receivables, type BucketId } from '../lib/receivables';
+import { BUCKETS, bucketOf, invState, receivables, type BucketId } from '../lib/receivables';
 import { Frame, TabBar, Title, type ScreenProps } from '../components/Chrome';
 import { InvoiceRow } from '../components/InvoiceRow';
 
@@ -65,48 +64,11 @@ function Receivables({ S, dispatch }: ScreenProps) {
   );
 }
 
-function Retailers({ S, dispatch }: ScreenProps) {
-  const rows = Object.values(RETAILERS).map((r) => {
-    const mine = S.invoices.filter((i) => i.retailer === r.id);
-    const unpaid = mine.filter((i) => !i.paidOn).reduce((a, i) => a + invTotal(i), 0);
-    const dues = duesOf(S.invoices, r.id);
-    const openOrders = S.orders.filter((o) => o.retailer === r.id && (o.status === 'draft' || o.status === 'human')).length;
-    return { r, unpaid, dues, count: mine.length, openOrders };
-  }).sort((a, b) => b.dues.amount - a.dues.amount || b.unpaid - a.unpaid);
-
-  return (
-    <>
-      <p className="intro">What’s normal for each retailer: the history every new order is checked against.</p>
-      {rows.map(({ r, unpaid, dues, count, openOrders }) => (
-        <button key={r.id} className="row-card" onClick={() => dispatch({ type: 'go', view: { name: 'retailer', id: r.id } })}>
-          <span className="rc-main">
-            <span className="rc-title">{r.name}</span>
-            <span className="rc-sub">{r.owner} · {r.area} · pays in about {r.avgPay} days</span>
-            <span className="chips" style={{ marginTop: 6 }}>
-              {dues.amount > 0 && <span className="chip red">{rs(dues.amount)} overdue</span>}
-              {openOrders > 0 && <span className="chip blue">{openOrders} order{openOrders > 1 ? 's' : ''} need you</span>}
-              <span className="chip">{count} invoice{count === 1 ? '' : 's'}</span>
-            </span>
-          </span>
-          <span className="rc-side">
-            <span className="rc-amt">{unpaid ? rs(unpaid) : 'No dues'}</span>
-            {unpaid > 0 && <span className="rc-note">unpaid</span>}
-          </span>
-        </button>
-      ))}
-    </>
-  );
-}
-
 export function Dashboard(props: ScreenProps) {
   const { S, dispatch } = props;
   return (
-    <Frame bar={<Title h="Dashboard" sub="Receivables and retailers" />} bottom={<TabBar S={S} dispatch={dispatch} />}>
-      <div className="seg tabs2" role="group" aria-label="Dashboard view">
-        <button aria-pressed={S.dashTab === 'receivables'} onClick={() => dispatch({ type: 'dashTab', v: 'receivables' })}>Receivables</button>
-        <button aria-pressed={S.dashTab === 'retailers'} onClick={() => dispatch({ type: 'dashTab', v: 'retailers' })}>Retailers</button>
-      </div>
-      {S.dashTab === 'receivables' ? <Receivables {...props} /> : <Retailers {...props} />}
+    <Frame bar={<Title h="Dashboard" sub="Receivables: what’s owed and what came in" />} bottom={<TabBar S={S} dispatch={dispatch} />}>
+      <Receivables {...props} />
     </Frame>
   );
 }

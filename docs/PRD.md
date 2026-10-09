@@ -491,3 +491,12 @@ Added at the merchant's request so a judge can walk the whole journey, from sign
 | History | Search all POs and invoices by retailer, PO or invoice number; filter unpaid, paid, not invoiced | — |
 
 The credit flag now reads New Bharat's dues from the invoice ledger (₹42,300, 38 days past terms on the seed), so paying that invoice clears the flag.
+
+**Learning is silent (revised 9 Oct 2026).** Decisions no longer raise "Learned" toasts. Each learning is recorded in the background against its retailer and a topic (ordering, reading, pricing, credit, payment) and collated into the retailer's profile on the new Retailers tab, which replaces the Learned tab:
+
+- **Ordering pattern:** how often, typical order value, channel mix (voice, chit, text, call), usual basket.
+- **Payment cycle:** average days to pay against terms, on-time share, last payment, unpaid and overdue now.
+- **Credit risk:** "Pays on time", "Slow payer" (pays past terms on average) or "Overdue: check before shipping" (an invoice is past terms).
+- **What the desk knows:** learnings grouped by topic, newest first, repeats collapsed.
+
+This overrides the toast behaviour in sections 4.1 and 6.4. The entry texts in 6.4 are unchanged; they appear in the profile instead.

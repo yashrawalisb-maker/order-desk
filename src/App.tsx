@@ -14,10 +14,10 @@ import { Failure } from './screens/Failure';
 import { History } from './screens/History';
 import { Inbox } from './screens/Inbox';
 import { InvoiceDetail } from './screens/InvoiceDetail';
-import { Learned } from './screens/Learned';
 import { Live } from './screens/Live';
 import { Login } from './screens/Login';
 import { RetailerDetail } from './screens/RetailerDetail';
+import { Retailers } from './screens/Retailers';
 
 export default function App() {
   const [S, dispatch] = useReducer(reducer, undefined, () => load());
@@ -30,7 +30,7 @@ export default function App() {
   // Keep the demo across reloads on this device.
   useEffect(() => {
     save(S);
-  }, [S.session, S.orders, S.invoices, S.learned, S.wk, S.money, S.poSeq, S.dashTab, S.live.retailer]);
+  }, [S.session, S.orders, S.invoices, S.learned, S.wk, S.money, S.poSeq, S.live.retailer]);
 
   // Toasts: 3 seconds, 4 seconds for "Learned".
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function App() {
   else if (v.name === 'human' && o) screen = <Failure {...props} o={o} />;
   else if (v.name === 'done' && o) screen = <Done {...props} o={o} />;
   else if (v.name === 'live') screen = <Live {...props} liveState={liveState} setLiveState={setLiveState} />;
-  else if (v.name === 'learned') screen = <Learned {...props} />;
+  else if (v.name === 'retailers') screen = <Retailers {...props} />;
   else if (v.name === 'dash') screen = <Dashboard {...props} />;
   else if (v.name === 'history') screen = <History {...props} />;
   else if (v.name === 'retailer' && v.id && RETAILERS[v.id]) screen = <RetailerDetail {...props} id={v.id} />;

@@ -3,9 +3,9 @@ import { fresh, type State } from './store';
 // Saves the demo to this browser so orders, invoices and payments survive a reload.
 // Storage can be missing or full (private windows, previews); the app works without it.
 
-const KEY = 'orderdesk:v2';
+const KEY = 'orderdesk:v3';
 
-type Saved = Pick<State, 'session' | 'orders' | 'invoices' | 'learned' | 'wk' | 'money' | 'poSeq' | 'dashTab'> & { liveRetailer: string };
+type Saved = Pick<State, 'session' | 'orders' | 'invoices' | 'learned' | 'wk' | 'money' | 'poSeq'> & { liveRetailer: string };
 
 export function save(S: State, store: Storage | undefined = globalThis.localStorage): void {
   const data: Saved = {
@@ -17,7 +17,6 @@ export function save(S: State, store: Storage | undefined = globalThis.localStor
     wk: S.wk,
     money: S.money,
     poSeq: S.poSeq,
-    dashTab: S.dashTab,
     liveRetailer: S.live.retailer,
   };
   try {
@@ -43,7 +42,6 @@ export function load(store: Storage | undefined = globalThis.localStorage): Stat
       wk: d.wk ?? base.wk,
       money: d.money ?? base.money,
       poSeq: d.poSeq ?? base.poSeq,
-      dashTab: d.dashTab ?? base.dashTab,
       live: { ...base.live, retailer: d.liveRetailer ?? base.live.retailer },
     };
   } catch {

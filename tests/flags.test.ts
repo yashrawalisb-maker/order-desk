@@ -38,7 +38,9 @@ describe('Sharma flow', () => {
     s = run(s, { type: 'flag', i: 3, k: 0 });
     expect(order(s, 'o1').lines[3].flag?.resolved).toBe('Normal for Diwali');
     expect(s.learned.at(-1)?.t).toBe('Sharma Kirana stocks up about 2x in festival weeks. I’ll stay quiet on Surf next Diwali.');
-    expect(s.toast).toMatchObject({ head: 'Learned', learn: true });
+    // Learning is silent: recorded against the retailer, no toast.
+    expect(s.toast).toBeNull();
+    expect(s.learned.at(-1)).toMatchObject({ retailer: 'sharma', topic: 'ordering' });
 
     s = run(s, { type: 'gap', k: 'ask' }, { type: 'approve' });
     const o = order(s, 'o1');

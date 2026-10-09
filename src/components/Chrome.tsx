@@ -40,8 +40,8 @@ export function TabBar({ S, dispatch }: ScreenProps) {
       {tab('inbox', 'Orders', I.inbox(), open)}
       {tab('live', 'Try it live', I.bolt())}
       {tab('dash', 'Dashboard', I.chart())}
+      {tab('retailers', 'Retailers', I.brain())}
       {tab('history', 'History', I.list())}
-      {tab('learned', 'Learned', I.brain(), S.learned.length)}
     </nav>
   );
 }

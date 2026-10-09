@@ -2,7 +2,7 @@
 
 An AI agent for Razorpay Agent Studio. It turns a retailer's WhatsApp order (voice note, chit photo or text) into a draft purchase order the distributor approves in one tap, then into an invoice and a Razorpay payment link. Built for the Razorpay x ISB AI PM Build Challenge, Track 2.
 
-End to end: sign in (demo OTP) → orders inbox → draft PO with AI flags → approve → purchase order and GST tax invoice (print or save as PDF) → Razorpay payment link sent → payment tracked to paid → receivables dashboard, retailer view, searchable history and what the desk learned. Data is saved in the browser; "Reset demo" in the account menu restores it.
+End to end: sign in (demo OTP) → orders inbox → draft PO with AI flags → approve → purchase order and GST tax invoice (print or save as PDF) → Razorpay payment link sent → payment tracked to paid → receivables dashboard, retailer profiles (ordering pattern, payment cycle, credit risk and what the desk has learned, collated in the background) and searchable history. Data is saved in the browser; "Reset demo" in the account menu restores it.
 
 Everything runs on sample data except **Try it live**, which sends a typed order (or chit photo) to Claude through a serverless function. Spec: [`docs/PRD.md`](docs/PRD.md).
 

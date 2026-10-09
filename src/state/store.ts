@@ -2,16 +2,16 @@ import { CAT, PO_SEQ_START, RETAILERS, SEED_LEARNED, SEED_ORDERS, seedInvoices }
 import { flagView, orderFlagView } from '../lib/flags.js';
 import { rateOf, rs, total, unitStr, viewOrderFor } from '../lib/money.js';
 import { daysBetween, duesOf, invState, invTotal, today } from '../lib/receivables.js';
-import type { FlagAction, Invoice, Learned, Line, Order, Session } from '../types.js';
+import type { FlagAction, Invoice, Learned, Line, Order, Session, Topic } from '../types.js';
 
 export type ViewName =
-  | 'inbox' | 'live' | 'learned' | 'dash' | 'history'
+  | 'inbox' | 'live' | 'dash' | 'retailers' | 'history'
   | 'po' | 'approved' | 'human' | 'done' | 'retailer' | 'invoice';
 export interface View {
   name: ViewName;
   id?: string;
 }
-export const TAB_ROOTS: ViewName[] = ['inbox', 'live', 'dash', 'history', 'learned'];
+export const TAB_ROOTS: ViewName[] = ['inbox', 'live', 'dash', 'retailers', 'history'];
 
 export interface Toast {
   id: number;
@@ -40,7 +40,6 @@ export interface State {
   learned: Learned[];
   sheet: 'stop' | 'profile' | null;
   doc: DocRef | null;
-  dashTab: 'receivables' | 'retailers';
   toast: Toast | null;
   toastSeq: number;
   /** ms timestamp of the last learning entry; lights the Learn step */
@@ -79,7 +78,6 @@ export type Action =
   | { type: 'paid'; no: string }
   | { type: 'remind'; no: string }
   | { type: 'doc'; doc: DocRef | null }
-  | { type: 'dashTab'; v: State['dashTab'] }
   | { type: 'reset' }
   | { type: 'clearToast'; id: number }
   | { type: 'live'; patch: Partial<LiveForm> }
@@ -96,7 +94,6 @@ export const fresh = (): State => ({
   learned: structuredClone(SEED_LEARNED),
   sheet: null,
   doc: null,
-  dashTab: 'receivables',
   toast: null,
   toastSeq: 0,
   pulse: 0,
@@ -116,10 +113,10 @@ function toast(S: State, t: string, opts: { head?: string; learn?: boolean } = {
   S.toast = { id: S.toastSeq, t, ...opts };
 }
 
-function learn(S: State, t: string, outcome = false) {
-  S.learned.push({ t, at: 'Today, ' + nowT(), ...(outcome ? { outcome: true } : {}) });
+/** Record what the desk learned against the retailer's profile. Silent: no toast. */
+function learn(S: State, retailer: string, topic: Topic, t: string, outcome = false) {
+  S.learned.push({ t, at: 'Today, ' + nowT(), retailer, topic, ...(outcome ? { outcome: true } : {}) });
   S.pulse = Date.now();
-  toast(S, t, { learn: true, head: 'Learned' });
 }
 
 function go(S: State, view: View) {
@@ -141,28 +138,28 @@ function applyAction(S: State, o: Order, a: FlagAction | { kind: 'ask' | 'skipga
   switch (a.kind) {
     case 'learn':
       line!.flag!.resolved = (a as FlagAction).label;
-      learn(S, (a as FlagAction).learn || `${r.name}: ${line!.qty} ${unitStr(c!.unit, line!.qty)} of ${c!.short} can be normal. I’ll widen the usual range.`);
+      learn(S, o.retailer, 'ordering', (a as FlagAction).learn || `${r.name}: ${line!.qty} ${unitStr(c!.unit, line!.qty)} of ${c!.short} can be normal. I’ll widen the usual range.`);
       break;
     case 'setqty': {
       const qty = (a as FlagAction).qty!;
       line!.qty = qty;
       line!.edited = true;
       line!.flag!.resolved = `Changed to ${qty}`;
-      learn(S, `${r.name}: you trimmed ${c!.short} back to ${qty}. I’ll keep flagging spikes like this one.`);
+      learn(S, o.retailer, 'ordering', `${r.name}: you trimmed ${c!.short} back to ${qty}. I’ll keep flagging spikes like this one.`);
       break;
     }
     case 'setsku': {
       const sku = (a as FlagAction).sku!;
       line!.sku = sku;
       line!.flag!.resolved = `Confirmed: ${CAT[sku].name}`;
-      learn(S, `${r.name}: “${line!.heard}” means ${CAT[sku].name}.`);
+      learn(S, o.retailer, 'reading', `${r.name}: “${line!.heard}” means ${CAT[sku].name}.`);
       break;
     }
     case 'setrate': {
       const rate = (a as FlagAction).rate!;
       line!.rate = rate;
       line!.flag!.resolved = `Honouring ${rs(rate)} for this order`;
-      learn(S, `${r.name}: you honoured a quoted rate of ${rs(rate)}. I’ll still flag quoted rates every time.`);
+      learn(S, o.retailer, 'pricing', `${r.name}: you honoured a quoted rate of ${rs(rate)}. I’ll still flag quoted rates every time.`);
       break;
     }
     case 'resolve': {
@@ -170,14 +167,15 @@ function applyAction(S: State, o: Order, a: FlagAction | { kind: 'ask' | 'skipga
       if (line) line.flag!.resolved = fa.label;
       else o.orderFlag!.resolved = fa.label;
       if (fa.caught) S.money.leak += fa.caught;
-      if (fa.learn) learn(S, fa.learn);
+      const topic: Topic = !line ? 'credit' : line.flag!.type === 'price_mismatch' ? 'pricing' : 'ordering';
+      if (fa.learn) learn(S, o.retailer, topic, fa.learn);
       break;
     }
     case 'ask':
       o.gap!.resolved = 'Asking in the WhatsApp echo';
       o.gap!.ask = true;
       S.money.asked += CAT[o.gap!.sku].rate;
-      learn(S, `${r.name}: when a usual item is missing, you ask before dispatch. I’ll keep suggesting it.`);
+      learn(S, o.retailer, 'ordering', `${r.name}: when a usual item is missing, you ask before dispatch. I’ll keep suggesting it.`);
       break;
     case 'skipgap':
       o.gap!.resolved = 'Skipped this time';
@@ -188,7 +186,7 @@ function applyAction(S: State, o: Order, a: FlagAction | { kind: 'ask' | 'skipga
       S.money.held += total(o);
       home(S);
       toast(S, `${r.name} is on hold. No PO or invoice went out.`);
-      learn(S, `${r.name}: orders on top of overdue dues get held for a call. I’ll raise this flag first next time.`);
+      learn(S, o.retailer, 'credit', `${r.name}: orders on top of overdue dues get held for a call. I’ll raise this flag first next time.`);
       break;
   }
 }
@@ -260,7 +258,7 @@ export function reducer(prev: State, a: Action): State {
       l.qty = a.n;
       l.confirmed = true;
       const lt = l.learn && l.learn[a.n];
-      learn(S, lt || `${R(o!).name}: “${l.heard}” confirmed as ${a.n} ${unitStr(CAT[l.sku!].unit, a.n)}.`);
+      learn(S, o!.retailer, 'reading', lt || `${R(o!).name}: “${l.heard}” confirmed as ${a.n} ${unitStr(CAT[l.sku!].unit, a.n)}.`);
       break;
     }
     case 'flag': {
@@ -282,7 +280,7 @@ export function reducer(prev: State, a: Action): State {
       l.sku = a.sku;
       l.conf = 'high';
       l.edited = true;
-      learn(S, `${R(o!).name}: “${l.itemText || l.heard}” means ${CAT[a.sku].name}.`);
+      learn(S, o!.retailer, 'reading', `${R(o!).name}: “${l.itemText || l.heard}” means ${CAT[a.sku].name}.`);
       break;
     }
     case 'drop':
@@ -335,8 +333,7 @@ export function reducer(prev: State, a: Action): State {
       home(S);
       toast(S, `Invoice ${o!.invNo} and payment link sent to ${r.name}${o!.echo ? ' with an order echo' : ''}.`, { head: 'Sent on WhatsApp' });
       for (const l of edits) {
-        S.learned.push({ t: `${r.name}: you changed ${CAT[l.sku!].short} to ${l.qty} ${unitStr(CAT[l.sku!].unit, l.qty)}. Logged against his usual range.`, at: 'Today, ' + nowT() });
-        S.pulse = Date.now();
+        learn(S, o!.retailer, 'ordering', `${r.name}: you changed ${CAT[l.sku!].short} to ${l.qty} ${unitStr(CAT[l.sku!].unit, l.qty)}. Logged against his usual range.`);
       }
       break;
     }
@@ -355,8 +352,11 @@ export function reducer(prev: State, a: Action): State {
       inv.paidOn = today();
       const r = RETAILERS[inv.retailer];
       const d = daysBetween(inv.issued, inv.paidOn);
+      toast(S, `${inv.no}: ${rs(invTotal(inv))} received from ${r.name}.`, { head: 'Payment received' });
       learn(
         S,
+        inv.retailer,
+        'payment',
         st.status === 'late'
           ? `${r.name} paid ${inv.no} ${st.days} days late (${rs(invTotal(inv))}). The credit flag stays first on his orders until he pays on time.`
           : `${r.name} paid ${inv.no} in ${d} day${d === 1 ? '' : 's'} through the Razorpay link. Reconciled in Tally; his lines keep approving untouched.`,
@@ -373,9 +373,6 @@ export function reducer(prev: State, a: Action): State {
     }
     case 'doc':
       S.doc = a.doc;
-      break;
-    case 'dashTab':
-      S.dashTab = a.v;
       break;
     case 'live':
       Object.assign(S.live, a.patch);

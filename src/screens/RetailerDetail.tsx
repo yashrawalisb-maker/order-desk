@@ -1,45 +1,74 @@
-import { CAT, RETAILERS } from '../data/seed';
 import { isOpen, rs, unitStr } from '../lib/money';
-import { duesOf, invTotal } from '../lib/receivables';
+import { perWeekLabel, profileOf } from '../lib/profile';
+import { fmtShort } from '../lib/receivables';
 import { BackButton, Frame, Title, type ScreenProps } from '../components/Chrome';
 import { InvoiceRow } from '../components/InvoiceRow';
-import { I, chIcon } from '../components/icons';
+import { chIcon } from '../components/icons';
+
+const RISK_TONE = { good: 'green', watch: 'amber', hold: 'red' } as const;
 
 export function RetailerDetail({ S, dispatch, id }: ScreenProps & { id: string }) {
-  const r = RETAILERS[id];
-  const invoices = S.invoices.filter((i) => i.retailer === id).sort((a, b) => b.issued.localeCompare(a.issued));
-  const unpaid = invoices.filter((i) => !i.paidOn).reduce((a, i) => a + invTotal(i), 0);
-  const dues = duesOf(S.invoices, id);
-  const orders = S.orders.filter((o) => o.retailer === id);
-  const learned = S.learned.filter((x) => x.t.includes(r.key)).slice().reverse();
-  const usual = Object.entries(r.usual);
+  const p = profileOf(S, id);
+  const { r, ordering: ord, payment: pay } = p;
 
   return (
-    <Frame bar={<><BackButton onClick={() => dispatch({ type: 'back' })} label="Back" /><Title h={r.name} sub={`${r.owner} · ${r.area}`} /></>}>
-      <div className="kpis">
-        <div className="kpi"><span className="k-label">Unpaid</span><span className="k-val">{rs(unpaid)}</span><span className="k-sub">{invoices.filter((i) => !i.paidOn).length} invoices</span></div>
-        <div className="kpi"><span className="k-label">Overdue</span><span className="k-val">{rs(dues.amount)}</span><span className="k-sub">{dues.amount ? `${dues.days} days past terms` : 'Nothing late'}</span></div>
-        <div className="kpi"><span className="k-label">Usually pays in</span><span className="k-val">{r.avgPay} days</span><span className="k-sub">On {r.terms}-day terms</span></div>
-        <div className="kpi"><span className="k-label">GSTIN</span><span className="k-val k-small">{r.gstin}</span><span className="k-sub">{r.address.split(',')[0]}</span></div>
+    <Frame bar={<><BackButton onClick={() => dispatch({ type: 'back' })} label="Back" /><Title h={r.name} sub={`${r.owner} · ${r.area} · GSTIN ${r.gstin}`} /></>}>
+      <div className={`risk ${RISK_TONE[p.risk.level]}`}>
+        <b>{p.risk.label}</b>
+        <span>{p.risk.why}</span>
       </div>
 
       <section className="card">
-        <h2>Usual order</h2>
-        {usual.length ? (
-          <table className="inv">
-            <tbody>
-              {usual.map(([sku, [a, b]]) => (
-                <tr key={sku}><td>{CAT[sku].short}</td><td>{a === b ? a : `${a}–${b}`} {unitStr(CAT[sku].unit, b)}</td></tr>
-              ))}
-            </tbody>
-          </table>
-        ) : <p className="muted">No order history on record yet.</p>}
+        <h2>Ordering pattern</h2>
+        <dl className="facts plain">
+          <dt>How often</dt><dd>{perWeekLabel(ord.perWeek)} <span className="muted-s">({r.history.orders8w} in 8 weeks)</span></dd>
+          <dt>Typical order</dt><dd>{ord.avgOrder ? rs(ord.avgOrder) : 'No orders yet'}</dd>
+          <dt>Sends orders as</dt>
+          <dd>{ord.channelMix.map((c) => `${c.label} ${c.pct}%`).join(', ')}</dd>
+        </dl>
+        {ord.basket.length > 0 ? (
+          <>
+            <h3 className="sub-h">Usual basket</h3>
+            <table className="inv">
+              <tbody>
+                {ord.basket.map((b) => (
+                  <tr key={b.sku}><td>{b.item.short}</td><td>{b.lo === b.hi ? b.lo : `${b.lo}–${b.hi}`} {unitStr(b.item.unit, b.hi)}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        ) : <p className="muted" style={{ marginTop: 8 }}>No usual basket yet: too few readable orders.</p>}
       </section>
 
-      {orders.length > 0 && (
+      <section className="card">
+        <h2>Payment cycle</h2>
+        <dl className="facts plain">
+          <dt>Pays in</dt><dd>About {pay.avgDays} days on {pay.terms}-day terms</dd>
+          <dt>On time</dt><dd>{pay.paidCount ? `${pay.onTime} of last ${pay.paidCount} paid within terms` : 'No payments in the ledger yet'}</dd>
+          {pay.lastPaid && <><dt>Last payment</dt><dd>{pay.lastPaid.inv.no}, {fmtShort(pay.lastPaid.inv.paidOn!)}, in {pay.lastPaid.st.days} days</dd></>}
+          <dt>Unpaid now</dt><dd>{pay.outstanding ? rs(pay.outstanding) : 'Nothing'}{pay.dues.amount ? `, ${rs(pay.dues.amount)} overdue` : ''}</dd>
+        </dl>
+      </section>
+
+      <section className="card">
+        <h2>What the desk knows</h2>
+        <p className="muted" style={{ marginTop: -4 }}>Collated from Rajesh’s decisions and {r.owner}’s payments.</p>
+        {p.knows.length ? p.knows.map((g) => (
+          <div key={g.id} className="knows">
+            <h3 className="sub-h">{g.title}</h3>
+            <ul>
+              {g.items.map((x, i) => (
+                <li key={i}>{x.t}<small>{x.at}{x.times > 1 ? ` · seen ${x.times} times` : ''}</small></li>
+              ))}
+            </ul>
+          </div>
+        )) : <p className="muted">Nothing yet. Every flag Rajesh acts on and every payment adds to this.</p>}
+      </section>
+
+      {p.todays.length > 0 && (
         <>
-          <div className="pohead"><h2>Orders today</h2><span>{orders.length}</span></div>
-          {orders.map((o) => (
+          <div className="pohead"><h2>Orders today</h2><span>{p.todays.length}</span></div>
+          {p.todays.map((o) => (
             <button key={o.id} className="row-card" onClick={() => dispatch({ type: 'open', id: o.id })}>
               <span className="ch">{chIcon(o.channel)}</span>
               <span className="rc-main">
@@ -56,16 +85,8 @@ export function RetailerDetail({ S, dispatch, id }: ScreenProps & { id: string }
         </>
       )}
 
-      <div className="pohead"><h2>Invoices</h2><span>{invoices.length}</span></div>
-      {invoices.length ? invoices.map((inv) => <InvoiceRow key={inv.no} inv={inv} dispatch={dispatch} showRetailer={false} />) : <div className="empty">No invoices yet.</div>}
-
-      <div className="pohead"><h2>What the desk learned</h2><span>{learned.length}</span></div>
-      {learned.length ? learned.map((x, i) => (
-        <div key={i} className={`learn ${x.outcome ? 'outcome' : ''}`}>
-          {x.outcome ? I.ok() : I.spark()}
-          <div>{x.t}<small>{x.outcome ? 'From the payment outcome, ' : ''}{x.at}</small></div>
-        </div>
-      )) : <div className="empty">Nothing learned about {r.name} yet.</div>}
+      <div className="pohead"><h2>Invoices</h2><span>{p.invoices.length}</span></div>
+      {p.invoices.length ? p.invoices.map((inv) => <InvoiceRow key={inv.no} inv={inv} dispatch={dispatch} showRetailer={false} />) : <div className="empty">No invoices yet.</div>}
     </Frame>
   );
 }

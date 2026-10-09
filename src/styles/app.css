@@ -349,3 +349,24 @@ input.otp{width:100%;border:1px solid var(--line);border-radius:12px;background:
   .doctools{display:none}
   .doc{max-width:none;padding:0;border-radius:0}
 }
+
+/* ---------- retailer profiles ---------- */
+.prof-card{align-items:flex-start}
+.prof-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.prof-facts{display:block;margin-top:6px;font-size:12.5px;color:var(--ink-2)}
+.prof-facts::first-letter{text-transform:uppercase}
+.risk{border-radius:14px;padding:11px 12px;display:flex;flex-direction:column;gap:2px;font-size:13px;border:1px solid var(--line);background:var(--surface)}
+.risk b{font-size:14px}
+.risk.green{background:var(--green-soft);border-color:var(--green-soft)}
+.risk.green b{color:var(--green)}
+.risk.amber{background:var(--amber-soft);border-color:var(--amber-line)}
+.risk.amber b{color:var(--amber)}
+.risk.red{background:var(--red-soft);border-color:var(--red-line)}
+.risk.red b{color:var(--red)}
+.facts.plain{background:none;padding:0;margin:0;grid-template-columns:104px 1fr;gap:6px 12px}
+.facts.plain dt{color:var(--ink-3)}
+.sub-h{font-size:12.5px;font-weight:600;color:var(--ink-2);margin:14px 0 4px}
+.knows ul{list-style:none;margin:0;padding:0}
+.knows li{font-size:13.5px;padding:7px 0 7px 12px;border-left:2px solid var(--brand-soft);margin-bottom:2px}
+.knows li small{display:block;font-size:11.5px;color:var(--ink-3);margin-top:1px}
+.knows:first-of-type .sub-h{margin-top:4px}

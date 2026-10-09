@@ -22,11 +22,11 @@ export const CATALOG: CatalogItem[] = [
 export const CAT: Record<string, CatalogItem> = Object.fromEntries(CATALOG.map((c) => [c.id, c]));
 
 export const RETAILERS: Record<string, Retailer> = {
-  sharma: { id: 'sharma', name: 'Sharma Kirana Store', owner: 'Ramesh', area: 'Vijay Nagar', usual: { LB125: [4, 6], PG70: [8, 12], TS1: [2, 2], SE1: [8, 10], VB200: [1, 1] }, overdue: 0, overdueDays: 0, terms: 21, avgPay: 9, key: 'Sharma', gstin: '23AHKPS4417Q1ZB', address: '12 Vijay Nagar Main Road, Indore 452010' },
-  balaji: { id: 'balaji', name: 'Balaji General Store', owner: 'Suresh', area: 'Palasia', usual: { MG70: [3, 5], CG100: [2, 2], CPS: [6, 10] }, overdue: 0, overdueDays: 0, terms: 21, avgPay: 12, key: 'Balaji', gstin: '23ATMPB8820L1Z4', address: '5 Palasia Square, Indore 452001' },
-  newbharat: { id: 'newbharat', name: 'New Bharat Traders', owner: 'Mahesh', area: 'Siyaganj', usual: { AA10: [12, 18], FO1: [2, 2], TS1: [1, 2] }, overdue: 42300, overdueDays: 38, terms: 21, avgPay: 31, key: 'New Bharat', gstin: '23AAQFN3156H1ZX', address: '88 Siyaganj Market, Indore 452007' },
-  patel: { id: 'patel', name: 'Patel Provision', owner: 'Kirit', area: 'Rajwada', usual: { MG70: [2, 3], VB200: [1, 1], RL1: [4, 6] }, overdue: 0, overdueDays: 0, terms: 21, avgPay: 14, key: 'Patel', gstin: '23BDXPP6093C1Z1', address: '21 Rajwada Chowk, Indore 452002' },
-  jaimata: { id: 'jaimata', name: 'Jai Mata Di Stores', owner: 'Pappu', area: 'Bhawarkua', usual: {}, overdue: 0, overdueDays: 0, terms: 21, avgPay: 18, key: 'Jai Mata', gstin: '23CKLPJ7741D1Z9', address: '3 Bhawarkua Road, Indore 452014' },
+  sharma: { id: 'sharma', name: 'Sharma Kirana Store', owner: 'Ramesh', area: 'Vijay Nagar', usual: { LB125: [4, 6], PG70: [8, 12], TS1: [2, 2], SE1: [8, 10], VB200: [1, 1] }, overdue: 0, overdueDays: 0, terms: 21, avgPay: 9, key: 'Sharma', gstin: '23AHKPS4417Q1ZB', address: '12 Vijay Nagar Main Road, Indore 452010', history: { orders8w: 9, channels: { voice: 7, text: 2 } } },
+  balaji: { id: 'balaji', name: 'Balaji General Store', owner: 'Suresh', area: 'Palasia', usual: { MG70: [3, 5], CG100: [2, 2], CPS: [6, 10] }, overdue: 0, overdueDays: 0, terms: 21, avgPay: 12, key: 'Balaji', gstin: '23ATMPB8820L1Z4', address: '5 Palasia Square, Indore 452001', history: { orders8w: 7, channels: { chit: 6, text: 1 } } },
+  newbharat: { id: 'newbharat', name: 'New Bharat Traders', owner: 'Mahesh', area: 'Siyaganj', usual: { AA10: [12, 18], FO1: [2, 2], TS1: [1, 2] }, overdue: 42300, overdueDays: 38, terms: 21, avgPay: 31, key: 'New Bharat', gstin: '23AAQFN3156H1ZX', address: '88 Siyaganj Market, Indore 452007', history: { orders8w: 6, channels: { text: 5, call: 1 } } },
+  patel: { id: 'patel', name: 'Patel Provision', owner: 'Kirit', area: 'Rajwada', usual: { MG70: [2, 3], VB200: [1, 1], RL1: [4, 6] }, overdue: 0, overdueDays: 0, terms: 21, avgPay: 14, key: 'Patel', gstin: '23BDXPP6093C1Z1', address: '21 Rajwada Chowk, Indore 452002', history: { orders8w: 8, channels: { call: 6, voice: 2 } } },
+  jaimata: { id: 'jaimata', name: 'Jai Mata Di Stores', owner: 'Pappu', area: 'Bhawarkua', usual: {}, overdue: 0, overdueDays: 0, terms: 21, avgPay: 18, key: 'Jai Mata', gstin: '23CKLPJ7741D1Z9', address: '3 Bhawarkua Road, Indore 452014', history: { orders8w: 3, channels: { voice: 3 } } },
 };
 
 export const SEED_ORDERS: Order[] = [
@@ -105,8 +105,8 @@ export const SEED_ORDERS: Order[] = [
 ];
 
 export const SEED_LEARNED: Learned[] = [
-  { t: 'New Bharat Traders paid 19 days late on the last order you shipped over dues (PO 112). The credit flag now sits first on his orders.', at: 'Yesterday, 6:10 pm', outcome: true },
-  { t: 'Patel Provision paid INV-2512 in 4 days with no corrections. His lines will keep approving untouched.', at: 'Yesterday, 6:10 pm', outcome: true },
+  { t: 'New Bharat Traders paid 19 days late on the last order you shipped over dues (PO 112). The credit flag now sits first on his orders.', at: 'Yesterday, 6:10 pm', retailer: 'newbharat', topic: 'payment', outcome: true },
+  { t: 'Patel Provision paid INV-2512 in 4 days with no corrections. His lines will keep approving untouched.', at: 'Yesterday, 6:10 pm', retailer: 'patel', topic: 'payment', outcome: true },
 ];
 
 export const LIVE_RETAILERS = ['sharma', 'balaji', 'newbharat'] as const;

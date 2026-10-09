@@ -30,6 +30,8 @@ export interface Retailer {
   key: string;
   gstin: string;
   address: string;
+  /** Last 8 weeks before the seeded ledger: order count and how orders arrived */
+  history: { orders8w: number; channels: Partial<Record<Channel, number>> };
 }
 
 export type ActionKind = 'learn' | 'setqty' | 'setsku' | 'setrate' | 'resolve' | 'hold';
@@ -102,9 +104,15 @@ export interface Order {
   viewOrder?: number[] | null;
 }
 
+/** What a learning is about, for collating it into the retailer's profile */
+export type Topic = 'ordering' | 'reading' | 'pricing' | 'credit' | 'payment';
+
+/** One thing the desk learned, recorded silently against a retailer. */
 export interface Learned {
   t: string;
   at: string;
+  retailer: string;
+  topic: Topic;
   outcome?: boolean;
 }
 

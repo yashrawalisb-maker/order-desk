@@ -12,7 +12,6 @@ import { Dashboard } from './screens/Dashboard';
 import { Done } from './screens/Done';
 import { DraftPO } from './screens/DraftPO';
 import { Failure } from './screens/Failure';
-import { History } from './screens/History';
 import { Inbox } from './screens/Inbox';
 import { InvoiceDetail } from './screens/InvoiceDetail';
 import { Live } from './screens/Live';
@@ -54,7 +53,6 @@ export default function App() {
   else if (v.name === 'live') screen = <Live {...props} liveState={liveState} setLiveState={setLiveState} />;
   else if (v.name === 'retailers') screen = <Retailers {...props} />;
   else if (v.name === 'dash') screen = <Dashboard {...props} />;
-  else if (v.name === 'history') screen = <History {...props} />;
   else if (v.name === 'retailer' && v.id && RETAILERS[v.id]) screen = <RetailerDetail {...props} id={v.id} />;
   else if (v.name === 'invoice' && v.id) screen = <InvoiceDetail {...props} no={v.id} />;
   else screen = <Inbox {...props} />;

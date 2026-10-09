@@ -1,5 +1,5 @@
 import { CAT, RETAILERS } from '../data/seed';
-import { amt, rs, total, unitStr } from '../lib/money';
+import { rs, total, unitStr } from '../lib/money';
 import type { Order } from '../types';
 import { BackButton, Frame, Title, type ScreenProps } from '../components/Chrome';
 import { I } from '../components/icons';
@@ -21,35 +21,35 @@ export function Approved({ dispatch, o }: ScreenProps & { o: Order }) {
       <div className="okhead">
         <div className="okmark">{I.okBig()}</div>
         <h2>{o.poNo}</h2>
-        <p>Invoice {o.invNo} raised in Tally from the approved PO</p>
+        <p>Ready to send to {r.owner}</p>
+      </div>
+      <div className="card rows">
+        <button className="row" onClick={() => dispatch({ type: 'doc', doc: { kind: 'invoice', order: o.id } })}>
+          <span className="ic-box">{I.doc()}</span>
+          <span className="row-main"><b>Invoice {o.invNo}</b><small>{o.lines.length} items · synced to Tally</small></span>
+          <span className="row-amt">{rs(total(o))}</span>
+        </button>
+        <button className="row" onClick={() => dispatch({ type: 'doc', doc: { kind: 'po', order: o.id } })}>
+          <span className="ic-box">{I.doc()}</span>
+          <span className="row-main"><b>Purchase order</b><small>{o.poNo}</small></span>
+          <span className="row-go" aria-hidden="true">›</span>
+        </button>
+        <div className="row">
+          <span className="ic-box brand">{I.link()}</span>
+          <span className="row-main"><b>Razorpay payment link</b><small>{o.payLink}</small></span>
+        </div>
       </div>
       <div className="card">
-        <h3>Invoice <span className="chip green">Synced to Tally</span></h3>
-        <table className="inv">
-          <tbody>
-            {o.lines.map((l, i) => {
-              const c = CAT[l.sku!];
-              return <tr key={i}><td>{c.short} × {l.qty} {unitStr(c.unit, l.qty)}</td><td>{rs(amt(l))}</td></tr>;
-            })}
-            <tr className="tot"><td>Total</td><td>{rs(total(o))}</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div className="acts doc-acts">
-        <button className="btn small" onClick={() => dispatch({ type: 'doc', doc: { kind: 'po', order: o.id } })}>{I.doc()} Purchase order</button>
-        <button className="btn small" onClick={() => dispatch({ type: 'doc', doc: { kind: 'invoice', order: o.id } })}>{I.doc()} Tax invoice</button>
-      </div>
-      <div className="card">
-        <h3>Razorpay payment link</h3>
-        <div className="paylink">{I.link()}<span>{o.payLink}<small>UPI, cards and netbanking. Payment reconciles to {o.invNo} in Tally automatically.</small></span></div>
-      </div>
-      <div className="card">
-        <h3>Order echo on WhatsApp</h3>
         <label className="toggle">
           <input type="checkbox" checked={!!o.echo} onChange={(e) => dispatch({ type: 'echo', on: e.target.checked })} />
-          Send {r.owner} a copy so he can catch a mistake before dispatch
+          Send {r.owner} a WhatsApp copy of the order
         </label>
-        {o.echo && <div className="echo">{echoText(o)}</div>}
+        {o.echo && (
+          <details className="peek">
+            <summary>Preview message</summary>
+            <div className="echo">{echoText(o)}</div>
+          </details>
+        )}
       </div>
     </Frame>
   );

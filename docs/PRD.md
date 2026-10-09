@@ -508,3 +508,8 @@ This overrides the toast behaviour in sections 4.1 and 6.4. The entry texts in 6
 - **Outcome metric:** "Recovered from overdue, 7 days" on the Dashboard.
 
 Every step is recorded silently in the retailer profile (credit and payments).
+
+**Decluttered UI (9 Oct 2026, from user feedback: "too much text and info on every tab").**
+- **Three tabs:** Orders · Money · Retailers. "Live order" is a button on Orders; history search lives in Money.
+- **Orders is a deck:** one full-height card per order (who, what they sent, items, total, at most two chips, one button) with an "Order 2 of 4" counter, and an end card linking to today's done orders.
+- **Less text everywhere:** the Approved screen is three rows plus Send; retailer profile sections fold, with the key fact in each header; the desktop side panel shows the headline and step names only. Flag reasons and learning texts are unchanged.

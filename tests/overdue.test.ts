@@ -62,3 +62,13 @@ describe('overdue: use the next order, hand off the chasing', () => {
     expect(s.learned.length).toBe(n);
   });
 });
+
+describe('navigation', () => {
+  it('Back from a live draft returns to Orders, not the form', () => {
+    const order = { id: 'L1', retailer: 'sharma', channel: 'text' as const, at: '5:00 pm', status: 'draft' as const, live: true, raw: 'x', lines: [] };
+    let s = run(fresh(), { type: 'go', view: { name: 'live' } }, { type: 'liveAdd', order });
+    expect(s.view).toEqual({ name: 'po', id: 'L1' });
+    s = run(s, { type: 'back' });
+    expect(s.view).toEqual({ name: 'inbox' });
+  });
+});

@@ -20,7 +20,6 @@ const COPY: Record<string, [string, string]> = {
   live: ['Now try it with a real order.', 'Type one the way a kirana owner would. Claude drafts the PO live against the sample catalogue and that retailer’s history.'],
   login: ['Rajesh signs in with his phone.', 'One number, one code. His phone is his office, so Order Desk lives there too.'],
   dash: ['Use the next order. Hand off the chasing.', 'When an overdue retailer orders again, the order ships against a part-payment through a Razorpay link. Reminders and calls go to Razorpay’s recovery agent, with the retailer’s payment profile attached.'],
-  history: ['Every PO and invoice, searchable.', 'The original message, the approved PO, the invoice and the payment stay together, so “I never ordered that” has an answer.'],
   retailers: ['Every retailer, profiled.', 'How each one orders, how fast they pay and what the desk has learned from Rajesh’s decisions, collated in the background from every order and payment.'],
   retailer: ['What’s normal for each retailer.', 'Ordering pattern, payment cycle and credit risk: the profile the desk checks every new order against.'],
   invoice: ['From payment link to paid.', 'When the retailer pays the Razorpay link, the invoice closes in Tally and the payment becomes a label the desk learns from.'],
@@ -46,21 +45,20 @@ export function StoryPanel({ S, dispatch }: ScreenProps) {
     if (v === 'done') return i < 6 ? 'done' : '';
     if (v === 'live') return S.live.busy ? (i < 4 ? 'on' : '') : '';
     if (v === 'retailers') return i === 6 ? 'on' : '';
-    if (v === 'invoice' || v === 'history') return i < 6 ? 'done' : '';
+    if (v === 'invoice') return i < 6 ? 'done' : '';
     if (v === 'dash') return i === 5 ? 'on' : i < 5 ? 'done' : '';
     if (v === 'retailer') return i === 2 || i === 6 ? 'on' : '';
     return '';
   };
-  const [h, lead] = COPY[v];
+  const [h] = COPY[v];
 
   return (
     <aside className="story" aria-label="How Order Desk works">
       <div className="brand"><b>Order Desk</b> for Razorpay Agent Studio</div>
       <h2 aria-live="polite">{h}</h2>
-      <p className="lead">{lead}</p>
       <ol className="pipe">
         {STEPS.map(([b, s, ai], i) => (
-          <li key={b} className={`${st(i)} ${ai ? 'ai' : ''}`}><span><b>{b}</b><span>{s}</span></span></li>
+          <li key={b} className={`${st(i)} ${ai ? 'ai' : ''}`} title={s}><span><b>{b}</b></span></li>
         ))}
       </ol>
       <div className="foot">

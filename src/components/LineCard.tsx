@@ -20,7 +20,7 @@ export function LineCard({ o, l, i, dispatch }: { o: Order; l: Line; i: number; 
           <div className="l-name">
             {c.name}
             <small>
-              {c.unit} of {c.pack}, {rs(rateOf(l))}
+              {rs(rateOf(l))}/{c.unit}
               {l.rate != null && l.rate !== c.rate ? <span className="edited">rate honoured</span> : null}
             </small>
           </div>

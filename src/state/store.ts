@@ -6,13 +6,13 @@ import { daysBetween, duesOf, fmtShort, invRemaining, invState, invTotal, today 
 import type { FlagAction, Invoice, Learned, Line, Order, Session, Topic } from '../types.js';
 
 export type ViewName =
-  | 'inbox' | 'live' | 'dash' | 'retailers' | 'history'
+  | 'inbox' | 'live' | 'dash' | 'retailers'
   | 'po' | 'approved' | 'human' | 'done' | 'retailer' | 'invoice';
 export interface View {
   name: ViewName;
   id?: string;
 }
-export const TAB_ROOTS: ViewName[] = ['inbox', 'live', 'dash', 'retailers', 'history'];
+export const TAB_ROOTS: ViewName[] = ['inbox', 'dash', 'retailers'];
 
 export interface Toast {
   id: number;
@@ -55,7 +55,7 @@ export interface State {
 export type Action =
   | { type: 'login'; phone: string }
   | { type: 'logout' }
-  | { type: 'tab'; v: ViewName }
+  | { type: 'tab'; v: ViewName; id?: string }
   | { type: 'back' }
   | { type: 'go'; view: View }
   | { type: 'open'; id: string }
@@ -222,7 +222,7 @@ export function reducer(prev: State, a: Action): State {
       home(S);
       break;
     case 'tab':
-      S.view = { name: a.v };
+      S.view = a.id ? { name: a.v, id: a.id } : { name: a.v };
       S.stack = [];
       S.playing = null;
       S.sheet = null;
@@ -429,7 +429,9 @@ export function reducer(prev: State, a: Action): State {
       a.order.viewOrder = viewOrderFor(a.order);
       S.orders.unshift(a.order);
       S.live = { ...S.live, busy: false, text: '', error: '' };
-      go(S, { name: 'po', id: a.order.id });
+      // The draft replaces the form, so Back returns to where the live order was started.
+      if (S.view.name === 'live') S.view = { name: 'po', id: a.order.id };
+      else go(S, { name: 'po', id: a.order.id });
       break;
   }
   return S;

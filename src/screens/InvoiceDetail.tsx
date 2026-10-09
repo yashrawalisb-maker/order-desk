@@ -1,5 +1,5 @@
-import { CAT, RETAILERS } from '../data/seed';
-import { rs, unitStr } from '../lib/money';
+import { RETAILERS } from '../data/seed';
+import { rs } from '../lib/money';
 import { fmtDate, fmtShort, invPayments, invRemaining, invState, invTotal } from '../lib/receivables';
 import { handoffPack } from '../lib/overdue';
 import { BackButton, Frame, Title, type ScreenProps } from '../components/Chrome';
@@ -43,14 +43,12 @@ export function InvoiceDetail({ S, dispatch, no }: ScreenProps & { no: string })
       )}
     >
       <div className="okhead">
-        <p className="k-label">Invoice total</p>
         <h2 className="hero-amt">{rs(invTotal(inv))}</h2>
         {!inv.paidOn && pays.length > 0 && <p className="muted" style={{ margin: '-4px 0 8px' }}>{rs(remaining)} still due</p>}
         <p><PayChip st={st} /></p>
       </div>
 
       <section className="card">
-        <h2>Payment</h2>
         <ol className="timeline">
           {steps.map((s) => (
             <li key={s.key} className={s.done ? 'done' : st.status === 'late' ? 'late' : ''}>
@@ -59,42 +57,44 @@ export function InvoiceDetail({ S, dispatch, no }: ScreenProps & { no: string })
             </li>
           ))}
         </ol>
-        <div className="paylink" style={{ marginTop: 10 }}>{I.link()}<span>{inv.payLink}<small>UPI, cards and netbanking. Reconciles to {inv.no} in Tally automatically.</small></span></div>
-        {!inv.paidOn && <p className="hint">In the live product Razorpay confirms payments on its own. Here, use the button below to simulate one.</p>}
       </section>
+
+      <div className="card rows">
+        <button className="row" onClick={() => dispatch({ type: 'doc', doc: { kind: 'invoice', invoice: inv.no } })}>
+          <span className="ic-box">{I.doc()}</span>
+          <span className="row-main"><b>Tax invoice</b><small>{inv.lines.length} items</small></span>
+          <span className="row-go" aria-hidden="true">›</span>
+        </button>
+        <button className="row" onClick={() => dispatch({ type: 'doc', doc: { kind: 'po', invoice: inv.no } })}>
+          <span className="ic-box">{I.doc()}</span>
+          <span className="row-main"><b>Purchase order</b><small>{inv.po}</small></span>
+          <span className="row-go" aria-hidden="true">›</span>
+        </button>
+        <div className="row">
+          <span className="ic-box brand">{I.link()}</span>
+          <span className="row-main"><b>Razorpay payment link</b><small>{inv.payLink}</small></span>
+          {!inv.paidOn && <span className="chip">Demo</span>}
+        </div>
+        {order && (
+          <button className="row" onClick={() => dispatch({ type: 'open', id: order.id })}>
+            <span className="ic-box">{I.text()}</span>
+            <span className="row-main"><b>Original order</b><small>What {r.owner} sent</small></span>
+            <span className="row-go" aria-hidden="true">›</span>
+          </button>
+        )}
+        <button className="row" onClick={() => dispatch({ type: 'go', view: { name: 'retailer', id: inv.retailer } })}>
+          <span className="ic-box">{I.shop()}</span>
+          <span className="row-main"><b>{r.name}</b><small>Retailer profile</small></span>
+          <span className="row-go" aria-hidden="true">›</span>
+        </button>
+      </div>
 
       {st.status === 'late' && (
-        <section className="card">
-          <h2>{inv.handedOff ? `With Razorpay’s recovery agent since ${fmtShort(inv.handedOff)}` : 'Recovery'}</h2>
-          <p className="muted">{inv.handedOff ? 'It received the invoice, the payment link and:' : 'Order Desk doesn’t chase. Hand this to Razorpay’s recovery agent with:'}</p>
-          <ul className="pack">{handoffPack(S, inv).map((x, i) => <li key={i}>{x}</li>)}</ul>
-          <p className="hint">Simulated in this prototype.</p>
-        </section>
+        <details className="card handoff">
+          <summary>{inv.handedOff ? `With Razorpay’s recovery agent since ${fmtShort(inv.handedOff)}` : 'Chasing: Razorpay’s recovery agent'}</summary>
+          <ul>{handoffPack(S, inv).map((x, i) => <li key={i}>{x}</li>)}</ul>
+        </details>
       )}
-
-      <section className="card">
-        <h2>Documents</h2>
-        <div className="acts">
-          <button className="btn small" onClick={() => dispatch({ type: 'doc', doc: { kind: 'invoice', invoice: inv.no } })}>{I.doc()} Tax invoice</button>
-          <button className="btn small" onClick={() => dispatch({ type: 'doc', doc: { kind: 'po', invoice: inv.no } })}>{I.doc()} Purchase order</button>
-          {order && <button className="btn small" onClick={() => dispatch({ type: 'open', id: order.id })}>Original order</button>}
-        </div>
-      </section>
-
-      <section className="card">
-        <h2>{inv.po}</h2>
-        <table className="inv">
-          <tbody>
-            {inv.lines.map((l, i) => {
-              const c = CAT[l.sku];
-              return <tr key={i}><td>{c.short} × {l.qty} {unitStr(c.unit, l.qty)}</td><td>{rs(l.rate * l.qty)}</td></tr>;
-            })}
-            <tr className="tot"><td>Total</td><td>{rs(invTotal(inv))}</td></tr>
-          </tbody>
-        </table>
-      </section>
-
-      <button className="linkbtn" style={{ marginTop: 12 }} onClick={() => dispatch({ type: 'go', view: { name: 'retailer', id: inv.retailer } })}>See {r.name}’s history</button>
     </Frame>
   );
 }

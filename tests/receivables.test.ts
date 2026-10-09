@@ -84,7 +84,7 @@ describe('end to end: login, approve, send, get paid', () => {
     expect(s.view).toEqual({ name: 'retailer', id: 'patel' });
     s = run(s, { type: 'back' });
     expect(s.view).toEqual({ name: 'dash' });
-    s = run(s, { type: 'tab', v: 'history' });
+    s = run(s, { type: 'tab', v: 'retailers' });
     expect(s.stack).toEqual([]);
   });
 

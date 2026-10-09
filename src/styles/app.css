@@ -199,7 +199,7 @@ textarea{width:100%;min-height:110px;border:1px solid var(--line);border-radius:
 /* ---------- story panel (desktop) ---------- */
 .story .brand{font-size:13px;color:var(--ink-3);margin-bottom:22px;display:flex;align-items:center;gap:8px}
 .story .brand b{color:var(--ink);font-weight:600}
-.story h2{font-size:26px;line-height:1.15;letter-spacing:-.02em;margin:0 0 10px;font-weight:600;text-wrap:balance}
+.story h2{font-size:26px;line-height:1.15;letter-spacing:-.02em;margin:0 0 26px;font-weight:600;text-wrap:balance}
 .story p.lead{margin:0 0 26px;color:var(--ink-2);font-size:15px;line-height:1.55}
 .pipe{list-style:none;margin:0 0 26px;padding:0;counter-reset:s}
 .pipe li{display:grid;grid-template-columns:26px 1fr;gap:10px;padding:6px 0;color:var(--ink-3);counter-increment:s;position:relative}
@@ -382,3 +382,67 @@ input.otp{width:100%;border:1px solid var(--line);border-radius:12px;background:
 .rel-opts button small{font-weight:500;font-variant-numeric:tabular-nums;opacity:.85}
 .pack{margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--ink-2)}
 .pack li{margin:2px 0}
+
+/* ---------- orders deck ---------- */
+.clamp2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.clamp3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.small-link{font-size:12.5px;padding:2px 2px 0}
+.appbar .btn.small{padding:6px 10px;display:inline-flex;align-items:center;gap:4px}
+.deck-strip{flex:none;display:flex;justify-content:space-between;align-items:baseline;padding:8px 18px;font-size:13px;background:var(--app);color:var(--ink-3);border-bottom:1px solid var(--line)}
+.deck-strip b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.screen.deck{padding:0;scroll-snap-type:y mandatory;overscroll-behavior:contain}
+.deck-card{scroll-snap-align:start;scroll-snap-stop:always;height:calc(100% - 24px);margin:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:18px 16px 16px;display:flex;flex-direction:column;overflow:hidden}
+.deck-card:last-child{margin-bottom:12px}
+.dc-top{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-3)}
+.dc-top .ch{width:30px;height:30px}
+.dc-name{font-size:24px;line-height:1.15;letter-spacing:-.02em;margin:14px 0 2px;font-weight:600}
+.dc-sub{margin:0;color:var(--ink-3);font-size:13.5px}
+.dc-preview{margin-top:16px;min-height:0;flex:1;overflow:hidden}
+.dc-preview .chit{font-size:17px;line-height:28px}
+.chit-more{font-size:14px;opacity:.7}
+.dc-foot{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+.dc-total{display:flex;align-items:baseline;gap:10px}
+.dc-total b{font-size:28px;letter-spacing:-.02em}
+.dc-total span{color:var(--ink-3);font-size:13.5px}
+.deck-end{align-items:center;justify-content:center;text-align:center;background:transparent;border-style:dashed}
+.deck-end .dc-foot{width:100%;margin-top:22px}
+.lever{margin-top:10px;display:flex;align-items:center;gap:10px;background:var(--brand-soft);border-radius:12px;padding:9px 10px;font-size:13px}
+.lever span{flex:1}
+details.handoff{margin-top:10px;padding-top:8px;border-top:1px solid var(--line);font-size:13px}
+details.handoff summary{cursor:pointer;font-weight:600;font-size:13px;color:var(--ink-2);padding:2px 0;min-height:24px}
+details.handoff ul{margin:6px 0 0;padding-left:18px;color:var(--ink-2)}
+details.handoff li{margin:2px 0}
+.card.overdue .acts{margin-top:10px}
+.kpis .k-val{font-size:22px}
+details.handoff{display:block}
+/* compact rows inside a card */
+.card.rows{padding:4px 12px}
+.card.rows .row{width:100%;display:flex;align-items:center;gap:12px;padding:11px 0;border:0;background:none;text-align:left;border-bottom:1px solid var(--line)}
+.card.rows .row:last-child{border-bottom:0}
+.ic-box{width:34px;height:34px;border-radius:10px;background:var(--app);display:grid;place-items:center;color:var(--ink-2);flex:none}
+.ic-box.brand{background:var(--brand-soft);color:var(--brand)}
+.row-main{flex:1;min-width:0;display:flex;flex-direction:column}
+.row-main b{font-size:14px;font-weight:600}
+.row-main small{font-size:12.5px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row-amt{font-weight:600;font-variant-numeric:tabular-nums}
+.row-go{color:var(--ink-3);font-size:20px}
+details.peek{margin-top:8px}
+details.peek summary{cursor:pointer;color:var(--brand);font-weight:600;font-size:13px;min-height:24px}
+/* collapsible sections */
+details.fold{padding:0}
+details.fold>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:10px;padding:13px 14px;min-height:44px}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary h2{font-size:14px;font-weight:600;margin:0}
+details.fold>summary span{flex:1;text-align:right;font-size:13px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+details.fold>summary::after{content:"›";color:var(--ink-3);font-size:18px;transform:rotate(90deg);transition:transform .15s}
+details.fold[open]>summary::after{transform:rotate(-90deg)}
+details.fold>:not(summary){margin-left:14px;margin-right:14px}
+details.fold>:last-child{margin-bottom:14px}
+details.card.handoff{padding:12px 14px;border-top:1px solid var(--line)}
+details.card.handoff summary{font-size:13.5px}
+.dc-items{list-style:none;margin:14px 0 0;padding:0}
+.dc-items li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.dc-items li:last-child{border-bottom:0}
+.dc-items b{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dc-items .more{color:var(--ink-3);font-size:13px}
+.dc-why{margin:12px 0 0;color:var(--ink-2);font-size:14px}

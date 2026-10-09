@@ -10,11 +10,12 @@ export interface ScreenProps {
 }
 
 /** App bar, scrolling body and bottom bar: the three parts every screen fills. */
-export function Frame({ bar, children, bottom }: { bar: ReactNode; children: ReactNode; bottom?: ReactNode }) {
+export function Frame({ bar, children, bottom, strip, bodyClass = '' }: { bar: ReactNode; children: ReactNode; bottom?: ReactNode; strip?: ReactNode; bodyClass?: string }) {
   return (
     <>
       <header className="appbar">{bar}</header>
-      <main className="screen">{children}</main>
+      {strip}
+      <main className={`screen ${bodyClass}`}>{children}</main>
       <footer className="bottom">{bottom}</footer>
     </>
   );
@@ -39,10 +40,8 @@ export function TabBar({ S, dispatch }: ScreenProps) {
   return (
     <nav className="tabs" aria-label="Main">
       {tab('inbox', 'Orders', I.inbox(), open)}
-      {tab('live', 'Try it live', I.bolt())}
-      {tab('dash', 'Dashboard', I.chart(), unhandled(S))}
-      {tab('retailers', 'Retailers', I.brain())}
-      {tab('history', 'History', I.list())}
+      {tab('dash', 'Money', I.rupee(), unhandled(S))}
+      {tab('retailers', 'Retailers', I.shop())}
     </nav>
   );
 }

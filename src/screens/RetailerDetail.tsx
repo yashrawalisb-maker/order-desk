@@ -16,7 +16,7 @@ export function RetailerDetail({ S, dispatch, id }: ScreenProps & { id: string }
   const cases = overdueCases(S).filter((c) => c.inv.retailer === id);
 
   return (
-    <Frame bar={<><BackButton onClick={() => dispatch({ type: 'back' })} label="Back" /><Title h={r.name} sub={`${r.owner} · ${r.area} · GSTIN ${r.gstin}`} /></>}>
+    <Frame bar={<><BackButton onClick={() => dispatch({ type: 'back' })} label="Back" /><Title h={r.name} sub={`${r.owner} · ${r.area}`} /></>}>
       <div className={`risk ${RISK_TONE[p.risk.level]}`}>
         <b>{p.risk.label}</b>
         <span>{p.risk.why}</span>
@@ -24,8 +24,8 @@ export function RetailerDetail({ S, dispatch, id }: ScreenProps & { id: string }
 
       {cases.map((c) => <OverdueCard key={c.inv.no} c={c} dispatch={dispatch} showRetailer={false} />)}
 
-      <section className="card">
-        <h2>Ordering pattern</h2>
+      <details className="card fold">
+        <summary><h2>Ordering</h2><span>{perWeekLabel(ord.perWeek).toLowerCase()}{ord.avgOrder ? `, ~${rs(ord.avgOrder)}` : ''}</span></summary>
         <dl className="facts plain">
           <dt>How often</dt><dd>{perWeekLabel(ord.perWeek)} <span className="muted-s">({r.history.orders8w} in 8 weeks)</span></dd>
           <dt>Typical order</dt><dd>{ord.avgOrder ? rs(ord.avgOrder) : 'No orders yet'}</dd>
@@ -43,23 +43,23 @@ export function RetailerDetail({ S, dispatch, id }: ScreenProps & { id: string }
               </tbody>
             </table>
           </>
-        ) : <p className="muted" style={{ marginTop: 8 }}>No usual basket yet: too few readable orders.</p>}
-      </section>
+        ) : <p className="muted" style={{ marginTop: 8 }}>No usual basket yet.</p>}
+      </details>
 
-      <section className="card">
-        <h2>Payment cycle</h2>
+      <details className="card fold">
+        <summary><h2>Payments</h2><span>~{pay.avgDays} days{pay.dues.amount ? `, ${rs(pay.dues.amount)} overdue` : pay.outstanding ? `, ${rs(pay.outstanding)} unpaid` : ''}</span></summary>
         <dl className="facts plain">
           <dt>Pays in</dt><dd>About {pay.avgDays} days on {pay.terms}-day terms</dd>
           <dt>On time</dt><dd>{pay.paidCount ? `${pay.onTime} of last ${pay.paidCount} paid within terms` : 'No payments in the ledger yet'}</dd>
           {pay.lastPaid && <><dt>Last payment</dt><dd>{pay.lastPaid.inv.no}, {fmtShort(pay.lastPaid.inv.paidOn!)}, in {pay.lastPaid.st.days} days</dd></>}
           <dt>Unpaid now</dt><dd>{pay.outstanding ? rs(pay.outstanding) : 'Nothing'}{pay.dues.amount ? `, ${rs(pay.dues.amount)} overdue` : ''}</dd>
           {recovery.length > 0 && <><dt>Recovery</dt><dd>{recovery.map((i) => `${i.no} with Razorpay’s recovery agent since ${fmtShort(i.handedOff!)}`).join('; ')}</dd></>}
+          <dt>GSTIN</dt><dd>{r.gstin}</dd>
         </dl>
-      </section>
+      </details>
 
-      <section className="card">
-        <h2>What the desk knows</h2>
-        <p className="muted" style={{ marginTop: -4 }}>Collated from Rajesh’s decisions and {r.owner}’s payments.</p>
+      <details className="card fold">
+        <summary><h2>What the desk knows</h2><span>{p.learnedCount || 'nothing yet'}</span></summary>
         {p.knows.length ? p.knows.map((g) => (
           <div key={g.id} className="knows">
             <h3 className="sub-h">{g.title}</h3>
@@ -69,12 +69,12 @@ export function RetailerDetail({ S, dispatch, id }: ScreenProps & { id: string }
               ))}
             </ul>
           </div>
-        )) : <p className="muted">Nothing yet. Every flag Rajesh acts on and every payment adds to this.</p>}
-      </section>
+        )) : <p className="muted">Every flag Rajesh acts on and every payment adds to this.</p>}
+      </details>
 
       {p.todays.length > 0 && (
         <>
-          <div className="pohead"><h2>Orders today</h2><span>{p.todays.length}</span></div>
+          <div className="pohead"><h2>Today</h2><span>{p.todays.length}</span></div>
           {p.todays.map((o) => (
             <button key={o.id} className="row-card" onClick={() => dispatch({ type: 'open', id: o.id })}>
               <span className="ch">{chIcon(o.channel)}</span>

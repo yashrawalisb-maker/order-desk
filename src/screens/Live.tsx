@@ -5,7 +5,7 @@ import { fromAI } from '../lib/fromAI';
 import { rs } from '../lib/money';
 import { nowT } from '../state/store';
 import type { Order } from '../types';
-import { Frame, TabBar, Title, type ScreenProps } from '../components/Chrome';
+import { BackButton, Frame, Title, type ScreenProps } from '../components/Chrome';
 
 const ERRORS: Record<string, string> = {
   cancelled: '',
@@ -59,8 +59,7 @@ export function Live({ S, dispatch, liveState, setLiveState }: ScreenProps & { l
   }
 
   return (
-    <Frame bar={<Title h="Try it live" sub="Claude drafts a PO from any order you type" />} bottom={<TabBar S={S} dispatch={dispatch} />}>
-      <p className="intro">Write an order the way a kirana owner would: Hinglish, nicknames, shorthand. The draft is checked against the retailer’s history and today’s price list.</p>
+    <Frame bar={<><BackButton onClick={() => dispatch({ type: 'back' })} label="Back to orders" /><Title h="Live order" sub="Type it the way a kirana owner would" /></>}>
 
       <div className="field">
         <span id="lr-label">Order from</span>

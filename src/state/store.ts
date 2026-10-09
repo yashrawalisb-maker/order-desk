@@ -1,13 +1,17 @@
-import { CAT, PO_SEQ_START, RETAILERS, SEED_LEARNED, SEED_ORDERS } from '../data/seed.js';
+import { CAT, PO_SEQ_START, RETAILERS, SEED_LEARNED, SEED_ORDERS, seedInvoices } from '../data/seed.js';
 import { flagView, orderFlagView } from '../lib/flags.js';
-import { rs, total, unitStr, viewOrderFor } from '../lib/money.js';
-import type { FlagAction, Learned, Line, Order } from '../types.js';
+import { rateOf, rs, total, unitStr, viewOrderFor } from '../lib/money.js';
+import { daysBetween, duesOf, invState, invTotal, today } from '../lib/receivables.js';
+import type { FlagAction, Invoice, Learned, Line, Order, Session } from '../types.js';
 
-export type ViewName = 'inbox' | 'live' | 'learned' | 'po' | 'approved' | 'human' | 'done';
+export type ViewName =
+  | 'inbox' | 'live' | 'learned' | 'dash' | 'history'
+  | 'po' | 'approved' | 'human' | 'done' | 'retailer' | 'invoice';
 export interface View {
   name: ViewName;
   id?: string;
 }
+export const TAB_ROOTS: ViewName[] = ['inbox', 'live', 'dash', 'history', 'learned'];
 
 export interface Toast {
   id: number;
@@ -23,11 +27,20 @@ export interface LiveForm {
   error: string;
 }
 
+/** A printable document: from a saved invoice, or straight from an approved order before Send. */
+export type DocRef = { kind: 'po' | 'invoice'; invoice?: string; order?: string };
+
 export interface State {
+  session: Session | null;
   view: View;
+  /** Views to go back to; cleared on tab switches */
+  stack: View[];
   orders: Order[];
+  invoices: Invoice[];
   learned: Learned[];
-  sheet: 'stop' | null;
+  sheet: 'stop' | 'profile' | null;
+  doc: DocRef | null;
+  dashTab: 'receivables' | 'retailers';
   toast: Toast | null;
   toastSeq: number;
   /** ms timestamp of the last learning entry; lights the Learn step */
@@ -40,8 +53,11 @@ export interface State {
 }
 
 export type Action =
+  | { type: 'login'; phone: string }
+  | { type: 'logout' }
   | { type: 'tab'; v: ViewName }
   | { type: 'back' }
+  | { type: 'go'; view: View }
   | { type: 'open'; id: string }
   | { type: 'play'; id: string | null }
   | { type: 'qty'; i: number; d: number }
@@ -52,6 +68,7 @@ export type Action =
   | { type: 'pick'; i: number; sku: string }
   | { type: 'drop'; i: number }
   | { type: 'stop' }
+  | { type: 'profile' }
   | { type: 'closesheet' }
   | { type: 'stopwhy'; v: string }
   | { type: 'approve' }
@@ -59,6 +76,10 @@ export type Action =
   | { type: 'send' }
   | { type: 'handled' }
   | { type: 'callback' }
+  | { type: 'paid'; no: string }
+  | { type: 'remind'; no: string }
+  | { type: 'doc'; doc: DocRef | null }
+  | { type: 'dashTab'; v: State['dashTab'] }
   | { type: 'reset' }
   | { type: 'clearToast'; id: number }
   | { type: 'live'; patch: Partial<LiveForm> }
@@ -67,10 +88,15 @@ export type Action =
 export const STOP_REASONS = ['Retailer cancelled', 'Duplicate order', 'Call the retailer first', 'Out of stock'];
 
 export const fresh = (): State => ({
+  session: null,
   view: { name: 'inbox' },
+  stack: [],
   orders: structuredClone(SEED_ORDERS),
+  invoices: seedInvoices(),
   learned: structuredClone(SEED_LEARNED),
   sheet: null,
+  doc: null,
+  dashTab: 'receivables',
   toast: null,
   toastSeq: 0,
   pulse: 0,
@@ -90,10 +116,23 @@ function toast(S: State, t: string, opts: { head?: string; learn?: boolean } = {
   S.toast = { id: S.toastSeq, t, ...opts };
 }
 
-function learn(S: State, t: string) {
-  S.learned.push({ t, at: 'Today, ' + nowT() });
+function learn(S: State, t: string, outcome = false) {
+  S.learned.push({ t, at: 'Today, ' + nowT(), ...(outcome ? { outcome: true } : {}) });
   S.pulse = Date.now();
   toast(S, t, { learn: true, head: 'Learned' });
+}
+
+function go(S: State, view: View) {
+  S.stack.push(S.view);
+  S.view = view;
+  S.playing = null;
+  S.sheet = null;
+}
+
+function home(S: State) {
+  S.view = { name: 'inbox' };
+  S.stack = [];
+  S.playing = null;
 }
 
 function applyAction(S: State, o: Order, a: FlagAction | { kind: 'ask' | 'skipgap' }, line: Line | null) {
@@ -147,7 +186,7 @@ function applyAction(S: State, o: Order, a: FlagAction | { kind: 'ask' | 'skipga
       o.status = 'held';
       o.stopReason = 'Call the retailer first';
       S.money.held += total(o);
-      S.view = { name: 'inbox' };
+      home(S);
       toast(S, `${r.name} is on hold. No PO or invoice went out.`);
       learn(S, `${r.name}: orders on top of overdue dues get held for a call. I’ll raise this flag first next time.`);
       break;
@@ -160,7 +199,7 @@ function openView(o: Order): View {
 
 export function reducer(prev: State, a: Action): State {
   if (a.type === 'clearToast') return prev.toast && prev.toast.id === a.id ? { ...prev, toast: null } : prev;
-  if (a.type === 'reset') return fresh();
+  if (a.type === 'reset') return { ...fresh(), session: prev.session };
 
   // Clone, then mutate the clone: keeps the reducer safe under StrictMode double calls.
   const S: State = structuredClone(prev);
@@ -168,21 +207,38 @@ export function reducer(prev: State, a: Action): State {
   const line = (i: number) => o!.lines[i];
 
   switch (a.type) {
+    case 'login':
+      S.session = { phone: a.phone, name: 'Rajesh Gupta' };
+      home(S);
+      toast(S, 'Signed in as Rajesh Gupta, Gupta Distributors.');
+      break;
+    case 'logout':
+      S.session = null;
+      S.sheet = null;
+      home(S);
+      break;
     case 'tab':
       S.view = { name: a.v };
+      S.stack = [];
       S.playing = null;
       S.sheet = null;
       break;
     case 'back':
-      S.view = { name: 'inbox' };
+      S.view = S.stack.pop() ?? { name: 'inbox' };
       S.playing = null;
+      break;
+    case 'go':
+      go(S, a.view);
       break;
     case 'open': {
       const t = S.orders.find((x) => x.id === a.id);
       if (!t) break;
       if (t.status === 'draft' && !t.viewOrder) t.viewOrder = viewOrderFor(t);
-      S.view = openView(t);
-      S.playing = null;
+      // Coming back from the Approved screen returns to the same draft, not a deeper stack.
+      if (S.view.name === 'approved' && S.view.id === t.id) {
+        S.view = openView(t);
+        S.playing = null;
+      } else go(S, openView(t));
       break;
     }
     case 'play':
@@ -214,7 +270,7 @@ export function reducer(prev: State, a: Action): State {
       break;
     }
     case 'oflag': {
-      const act = orderFlagView(o!).actions[a.k];
+      const act = orderFlagView(o!, duesOf(S.invoices, o!.retailer)).actions[a.k];
       if (act) applyAction(S, o!, act, null);
       break;
     }
@@ -236,6 +292,9 @@ export function reducer(prev: State, a: Action): State {
     case 'stop':
       S.sheet = 'stop';
       break;
+    case 'profile':
+      S.sheet = 'profile';
+      break;
     case 'closesheet':
       S.sheet = null;
       break;
@@ -243,7 +302,7 @@ export function reducer(prev: State, a: Action): State {
       o!.status = a.v === 'Call the retailer first' ? 'held' : 'stopped';
       o!.stopReason = a.v;
       S.sheet = null;
-      S.view = { name: 'inbox' };
+      home(S);
       toast(S, `Stopped. No PO, invoice or link went to ${R(o!).name}.`);
       break;
     case 'approve':
@@ -266,7 +325,14 @@ export function reducer(prev: State, a: Action): State {
       o!.approvedAt = nowT();
       S.wk.within += 1;
       S.wk.total += 1;
-      S.view = { name: 'inbox' };
+      if (!S.invoices.some((x) => x.no === o!.invNo)) {
+        S.invoices.unshift({
+          no: o!.invNo!, po: o!.poNo!, retailer: o!.retailer, orderId: o!.id, issued: today(),
+          lines: o!.lines.filter((l) => l.sku).map((l) => ({ sku: l.sku!, qty: l.qty, rate: rateOf(l) })),
+          payLink: o!.payLink!, paidOn: null,
+        });
+      }
+      home(S);
       toast(S, `Invoice ${o!.invNo} and payment link sent to ${r.name}${o!.echo ? ' with an order echo' : ''}.`, { head: 'Sent on WhatsApp' });
       for (const l of edits) {
         S.learned.push({ t: `${r.name}: you changed ${CAT[l.sku!].short} to ${l.qty} ${unitStr(CAT[l.sku!].unit, l.qty)}. Logged against his usual range.`, at: 'Today, ' + nowT() });
@@ -276,11 +342,40 @@ export function reducer(prev: State, a: Action): State {
     }
     case 'handled':
       o!.status = 'handled';
-      S.view = { name: 'inbox' };
+      home(S);
       toast(S, `${R(o!).name} marked as handled by hand.`);
       break;
     case 'callback':
       toast(S, `Calling ${R(o!).owner} at ${R(o!).name}…`);
+      break;
+    case 'paid': {
+      const inv = S.invoices.find((x) => x.no === a.no);
+      if (!inv || inv.paidOn) break;
+      const st = invState(inv);
+      inv.paidOn = today();
+      const r = RETAILERS[inv.retailer];
+      const d = daysBetween(inv.issued, inv.paidOn);
+      learn(
+        S,
+        st.status === 'late'
+          ? `${r.name} paid ${inv.no} ${st.days} days late (${rs(invTotal(inv))}). The credit flag stays first on his orders until he pays on time.`
+          : `${r.name} paid ${inv.no} in ${d} day${d === 1 ? '' : 's'} through the Razorpay link. Reconciled in Tally; his lines keep approving untouched.`,
+        true,
+      );
+      break;
+    }
+    case 'remind': {
+      const inv = S.invoices.find((x) => x.no === a.no);
+      if (!inv) break;
+      inv.reminders = (inv.reminders ?? 0) + 1;
+      toast(S, `Reminder sent to ${RETAILERS[inv.retailer].owner} on WhatsApp with the payment link for ${inv.no}.`, { head: 'Sent on WhatsApp' });
+      break;
+    }
+    case 'doc':
+      S.doc = a.doc;
+      break;
+    case 'dashTab':
+      S.dashTab = a.v;
       break;
     case 'live':
       Object.assign(S.live, a.patch);
@@ -289,7 +384,7 @@ export function reducer(prev: State, a: Action): State {
       a.order.viewOrder = viewOrderFor(a.order);
       S.orders.unshift(a.order);
       S.live = { ...S.live, busy: false, text: '', error: '' };
-      S.view = { name: 'po', id: a.order.id };
+      go(S, { name: 'po', id: a.order.id });
       break;
   }
   return S;

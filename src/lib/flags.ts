@@ -22,11 +22,13 @@ export function flagView(o: Order, l: Line): FlagView {
   return { title: f.title ?? 'Worth a look', reason: f.reason ?? '', actions: f.actions ?? [] };
 }
 
-export function orderFlagView(o: Order): FlagView {
+/** dues: the live overdue balance from the invoice ledger; defaults to the retailer record. */
+export function orderFlagView(o: Order, dues?: { amount: number; days: number }): FlagView {
   const r = RETAILERS[o.retailer];
+  const d = dues ?? { amount: r.overdue, days: r.overdueDays };
   return {
     title: 'Already overdue',
-    reason: `${rs(r.overdue)} overdue for ${r.overdueDays} days on ${r.terms}-day terms. This order adds ${rs(total(o))}.`,
+    reason: `${rs(d.amount)} overdue for ${d.days} days on ${r.terms}-day terms. This order adds ${rs(total(o))}.`,
     actions: [
       { label: 'Ship anyway', kind: 'resolve', learn: `${r.name}: you shipped despite overdue dues. I’ll keep showing the balance on every order.` },
       { label: 'Hold and call', kind: 'hold' },

@@ -4,7 +4,7 @@ The full spec is `docs/PRD.md`. This file condenses the parts you need on every 
 
 ## Rules
 - Copy, flag reasons and Learned texts are the pitch. Don't reword them; they live in `src/data/seed.ts`, `src/lib/flags.ts` and `src/state/store.ts`.
-- No login, database, analytics, settings screen or component library.
+- Login is a demo (phone + any 6-digit OTP, no backend). State is saved in the browser (`src/state/persist.ts`). No real accounts, database, analytics or component library.
 - The API key stays server-side (`api/draft.ts`, env `ANTHROPIC_API_KEY`). Never import the SDK in `src/`.
 - The chit stays CSS-rendered paper, never a stock image.
 - The AI only suggests. It never changes a rate or refuses credit; both are flags with a human choice. Invoice, payment link and echo are not AI and must not be labelled as AI.
@@ -13,6 +13,8 @@ The full spec is `docs/PRD.md`. This file condenses the parts you need on every 
 ## Layout
 - `src/data/seed.ts`: catalogue, retailers, the five seeded orders, Learned seeds, live examples. Shared with `api/draft.ts`, so its relative imports are type-only and use `.js` extensions.
 - `src/lib/`: `money.ts` (formatting, totals, units), `flags.ts` (flag views with live numbers), `fromAI.ts` (model JSON to PO lines, all guards), `prompt.ts` (the live prompt and JSON parser, server-side), `api.ts` (browser client and image downscale).
+- `src/lib/receivables.ts`: invoice status, dues, ageing, GST split, amount in words. `src/data/seed.ts` `seedInvoices()` is the ledger behind the dashboard; New Bharat's dues come from it.
+- `src/components/DocView.tsx`: printable PO and tax invoice (print CSS gives the PDF).
 - `src/state/store.ts`: one `useReducer` store. Every action from PRD section 6.3 and every Learned entry from section 6.4 is here. The reducer clones state, then mutates the clone.
 - `src/screens/`, `src/components/`: React views. `src/styles/tokens.css` holds the colour tokens.
 - `api/draft.ts`: Vercel function. `GET` returns `{on}`; `POST {retailerId, text, imageBase64?, imageMediaType?}` returns the model JSON or `{error: code}`. 10 calls a minute per IP, 1,000 characters, 1.5 MB image, 25 s timeout.

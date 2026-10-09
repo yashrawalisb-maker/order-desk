@@ -476,3 +476,18 @@ Read docs/PRD.md fully before writing any code. Build the Order Desk prototype e
 - Put the API key in the browser bundle.
 - Replace the chit rendering with a stock image.
 - Change any flag reason or Learned text; those are the pitch.
+
+## 13. Addendum: end-to-end build (9 Oct 2026)
+
+Added at the merchant's request so a judge can walk the whole journey, from sign-in to a paid invoice. These lift two v1 non-goals (login, persistence) in demo form only.
+
+| Area | What it does | Not real |
+|---|---|---|
+| Sign-in | Phone number, then a 6-digit OTP; any 6 digits pass. Account menu on the inbox avatar: business details, Reset demo data, Sign out | No SMS, no accounts |
+| Saving | Orders, invoices, payments, Learned entries and counters persist in the browser across reloads | No server or database |
+| Documents | Purchase order and GST tax invoice (HSN, taxable value, CGST/SGST, amount in words) from the Approved and invoice screens; Print or save as PDF | GSTINs, HSN codes and GST rates are illustrative and marked so |
+| Payment tracking | Each invoice shows its payment timeline (raised, link sent, paid). "Simulate payment received" stands in for Razorpay's webhook; "Remind" re-sends the link. A payment writes an outcome entry to Learned | Payment is simulated |
+| Dashboard | Receivables: outstanding, overdue, collected in 7 days, average days to pay, unpaid invoices by age (tap a bar to filter), invoice list. Retailers: dues, open orders and invoices per retailer, with a detail view (usual order, invoices, what the desk learned) | Seeded ledger of 9 past invoices |
+| History | Search all POs and invoices by retailer, PO or invoice number; filter unpaid, paid, not invoiced | — |
+
+The credit flag now reads New Bharat's dues from the invoice ledger (₹42,300, 38 days past terms on the seed), so paying that invoice clears the flag.

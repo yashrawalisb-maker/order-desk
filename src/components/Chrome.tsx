@@ -39,6 +39,8 @@ export function TabBar({ S, dispatch }: ScreenProps) {
     <nav className="tabs" aria-label="Main">
       {tab('inbox', 'Orders', I.inbox(), open)}
       {tab('live', 'Try it live', I.bolt())}
+      {tab('dash', 'Dashboard', I.chart())}
+      {tab('history', 'History', I.list())}
       {tab('learned', 'Learned', I.brain(), S.learned.length)}
     </nav>
   );

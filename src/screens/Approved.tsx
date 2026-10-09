@@ -35,6 +35,10 @@ export function Approved({ dispatch, o }: ScreenProps & { o: Order }) {
           </tbody>
         </table>
       </div>
+      <div className="acts doc-acts">
+        <button className="btn small" onClick={() => dispatch({ type: 'doc', doc: { kind: 'po', order: o.id } })}>{I.doc()} Purchase order</button>
+        <button className="btn small" onClick={() => dispatch({ type: 'doc', doc: { kind: 'invoice', order: o.id } })}>{I.doc()} Tax invoice</button>
+      </div>
       <div className="card">
         <h3>Razorpay payment link</h3>
         <div className="paylink">{I.link()}<span>{o.payLink}<small>UPI, cards and netbanking. Payment reconciles to {o.invNo} in Tally automatically.</small></span></div>

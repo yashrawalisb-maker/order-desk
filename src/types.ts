@@ -10,6 +10,9 @@ export interface CatalogItem {
   pack: string;
   rate: number;
   aka: string[];
+  /** Sample HSN code and GST rate (%) for the tax invoice. Rates include GST. */
+  hsn: string;
+  gst: number;
 }
 
 export interface Retailer {
@@ -23,6 +26,10 @@ export interface Retailer {
   overdueDays: number;
   terms: number;
   avgPay: number;
+  /** How Learned entries refer to this retailer, for the retailer view */
+  key: string;
+  gstin: string;
+  address: string;
 }
 
 export type ActionKind = 'learn' | 'setqty' | 'setsku' | 'setrate' | 'resolve' | 'hold';
@@ -99,4 +106,29 @@ export interface Learned {
   t: string;
   at: string;
   outcome?: boolean;
+}
+
+export interface InvoiceLine {
+  sku: string;
+  qty: number;
+  /** Rate charged, GST included */
+  rate: number;
+}
+
+export interface Invoice {
+  no: string;
+  po: string;
+  retailer: string;
+  orderId?: string;
+  /** YYYY-MM-DD */
+  issued: string;
+  lines: InvoiceLine[];
+  payLink: string;
+  paidOn?: string | null;
+  reminders?: number;
+}
+
+export interface Session {
+  phone: string;
+  name: string;
 }

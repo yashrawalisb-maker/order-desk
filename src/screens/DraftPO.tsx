@@ -1,6 +1,7 @@
 import { CAT, RETAILERS } from '../data/seed';
 import { orderFlagView } from '../lib/flags';
 import { pendingLow, rs, total, unmatched, viewOrderFor } from '../lib/money';
+import { duesOf } from '../lib/receivables';
 import type { Order } from '../types';
 import { BackButton, Frame, Title, type ScreenProps } from '../components/Chrome';
 import { FlagCard, Resolved } from '../components/FlagCard';
@@ -13,6 +14,7 @@ export function DraftPO({ S, dispatch, o }: ScreenProps & { o: Order }) {
   const lo = pendingLow(o) + unmatched(o);
   const order = o.viewOrder ?? viewOrderFor(o);
   const g = o.gap ? CAT[o.gap.sku] : null;
+  const dues = duesOf(S.invoices, o.retailer);
 
   return (
     <Frame
@@ -39,8 +41,10 @@ export function DraftPO({ S, dispatch, o }: ScreenProps & { o: Order }) {
 
       {o.orderFlag && (o.orderFlag.resolved ? (
         <Resolved text={o.orderFlag.resolved} className="orderflag" />
+      ) : dues.amount > 0 ? (
+        <FlagCard f={orderFlagView(o, dues)} className="orderflag" onAction={(k) => dispatch({ type: 'oflag', k })} />
       ) : (
-        <FlagCard f={orderFlagView(o)} className="orderflag" onAction={(k) => dispatch({ type: 'oflag', k })} />
+        <Resolved text="Overdue balance cleared since this order came in" className="orderflag" />
       ))}
 
       {o.gap && g && (o.gap.resolved ? (

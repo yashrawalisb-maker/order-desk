@@ -18,13 +18,18 @@ const COPY: Record<string, [string, string]> = {
   human: ['When it can’t read an order, it doesn’t guess.', 'Unclear orders land in “Needs you” with the raw message. That’s today’s workflow, so no order is lost.'],
   done: ['Every order keeps its trail.', 'The original message, the draft and Rajesh’s decision stay together, so “I never ordered that” has an answer.'],
   live: ['Now try it with a real order.', 'Type one the way a kirana owner would. Claude drafts the PO live against the sample catalogue and that retailer’s history.'],
+  login: ['Rajesh signs in with his phone.', 'One number, one code. His phone is his office, so Order Desk lives there too.'],
+  dash: ['Every invoice, every rupee still out.', 'Receivables by age and by retailer. Razorpay payment links reconcile on their own, so Rajesh sees who paid without asking.'],
+  history: ['Every PO and invoice, searchable.', 'The original message, the approved PO, the invoice and the payment stay together, so “I never ordered that” has an answer.'],
+  retailer: ['What’s normal for each retailer.', 'Usual items, dues and payment habits: the history the desk checks every new order against.'],
+  invoice: ['From payment link to paid.', 'When the retailer pays the Razorpay link, the invoice closes in Tally and the payment becomes a label the desk learns from.'],
   learned: ['Every decision is a label. So is every payment.', 'Rajesh’s edits teach the desk what’s normal for each retailer. Payment outcomes, who paid late and which invoices got corrected, teach it which flags were right.'],
 };
 
 const PULSE_MS = 2500;
 
 export function StoryPanel({ S, dispatch }: ScreenProps) {
-  const v = S.view.name;
+  const v = S.session ? S.view.name : 'login';
   const [, tick] = useState(0);
   const learning = Date.now() - S.pulse < PULSE_MS;
   useEffect(() => {
@@ -41,6 +46,8 @@ export function StoryPanel({ S, dispatch }: ScreenProps) {
     if (v === 'done') return i < 6 ? 'done' : '';
     if (v === 'live') return S.live.busy ? (i < 4 ? 'on' : '') : '';
     if (v === 'learned') return i === 6 ? 'on' : '';
+    if (v === 'invoice' || v === 'history') return i < 6 ? 'done' : '';
+    if (v === 'dash' || v === 'retailer') return i === 2 ? 'on' : '';
     return '';
   };
   const [h, lead] = COPY[v];
@@ -55,7 +62,7 @@ export function StoryPanel({ S, dispatch }: ScreenProps) {
           <li key={b} className={`${st(i)} ${ai ? 'ai' : ''}`}><span><b>{b}</b><span>{s}</span></span></li>
         ))}
       </ol>
-      {S.learned.length > 0 && (
+      {S.session && S.learned.length > 0 && (
         <>
           <h3 className="lh">Learned so far</h3>
           {S.learned.slice(-3).reverse().map((x, i) => <p key={S.learned.length - i} className="lrn">{x.t}</p>)}
@@ -63,7 +70,7 @@ export function StoryPanel({ S, dispatch }: ScreenProps) {
       )}
       <div className="foot">
         <span>Prototype with sample data. Gupta Distributors and its retailers are fictional.</span>
-        <button className="btn small" onClick={() => dispatch({ type: 'reset' })}>Reset demo</button>
+        {S.session && <button className="btn small" onClick={() => dispatch({ type: 'reset' })}>Reset demo</button>}
       </div>
     </aside>
   );

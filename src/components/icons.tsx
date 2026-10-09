@@ -25,6 +25,13 @@ export const I = {
   inbox: () => S(20, <><path d="M3 13l3-8h12l3 8v6H3z" /><path d="M3 13h5l1 3h6l1-3h5" /></>),
   bolt: () => S(20, <path d="M13 2L4 14h7l-1 8 9-12h-7z" />),
   brain: () => S(20, <path d="M12 3v18M8 7a3 3 0 1 0-3 5 3 3 0 0 0 3 5M16 7a3 3 0 1 1 3 5 3 3 0 0 1-3 5" />),
+  chart: () => S(20, <><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /></>),
+  list: () => S(20, <><path d="M8 6h13M8 12h13M8 18h13" /><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01" strokeWidth={3} /></>),
+  doc: () => S(16, <><path d="M14 3H6v18h12V7z" /><path d="M14 3v4h4M9 12h6M9 16h6" /></>),
+  search: () => S(16, <><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4-4" /></>),
+  bell: () => S(16, <><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z" /><path d="M10 20a2 2 0 0 0 4 0" /></>),
+  rupee: () => S(16, <path d="M7 4h11M7 9h11M9 4c5 0 6 5 0 5H7l8 11" />),
+  shield: () => S(18, <><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" /><path d="M8.5 12l2.5 2.5L15.5 10" /></>),
   link: () => S(18, <><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" /><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" /></>),
 };
 

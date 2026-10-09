@@ -47,7 +47,7 @@ export function Inbox({ S, dispatch }: ScreenProps) {
   const M = S.money;
   return (
     <Frame
-      bar={<><Title h="Order desk" sub="Gupta Distributors, Indore" /><div className="avatar" role="img" aria-label="Rajesh Gupta">RG</div></>}
+      bar={<><Title h="Order desk" sub="Gupta Distributors, Indore" /><button className="avatar" onClick={() => dispatch({ type: 'profile' })} aria-label="Account: Rajesh Gupta">RG</button></>}
       bottom={<TabBar S={S} dispatch={dispatch} />}
     >
       <div className="ns">

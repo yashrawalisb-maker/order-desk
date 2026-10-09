@@ -32,6 +32,7 @@ export function orderFlagView(o: Order, dues?: { amount: number; days: number })
     actions: [
       { label: 'Ship anyway', kind: 'resolve', learn: `${r.name}: you shipped despite overdue dues. I’ll keep showing the balance on every order.` },
       { label: 'Hold and call', kind: 'hold' },
+      { label: `Ship when ${rs(Math.round(d.amount / 2))} is paid`, kind: 'release' },
     ],
     red: true,
   };

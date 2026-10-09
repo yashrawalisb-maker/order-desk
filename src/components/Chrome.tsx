@@ -1,5 +1,6 @@
 import type { Dispatch, ReactNode } from 'react';
 import { isOpen } from '../lib/money';
+import { unhandled } from '../lib/overdue';
 import type { Action, State, ViewName } from '../state/store';
 import { I } from './icons';
 
@@ -39,7 +40,7 @@ export function TabBar({ S, dispatch }: ScreenProps) {
     <nav className="tabs" aria-label="Main">
       {tab('inbox', 'Orders', I.inbox(), open)}
       {tab('live', 'Try it live', I.bolt())}
-      {tab('dash', 'Dashboard', I.chart())}
+      {tab('dash', 'Dashboard', I.chart(), unhandled(S))}
       {tab('retailers', 'Retailers', I.brain())}
       {tab('history', 'History', I.list())}
     </nav>

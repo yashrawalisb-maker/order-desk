@@ -34,7 +34,7 @@ export interface Retailer {
   history: { orders8w: number; channels: Partial<Record<Channel, number>> };
 }
 
-export type ActionKind = 'learn' | 'setqty' | 'setsku' | 'setrate' | 'resolve' | 'hold';
+export type ActionKind = 'learn' | 'setqty' | 'setsku' | 'setrate' | 'resolve' | 'hold' | 'release';
 
 export interface FlagAction {
   label: string;
@@ -100,6 +100,8 @@ export interface Order {
   echo?: boolean;
   approvedAt?: string | null;
   stopReason?: string | null;
+  /** Held until the retailer pays part of an overdue invoice */
+  release?: { invoice: string; amount: number; sentOn: string } | null;
   /** Line display order, fixed when the PO screen first opens */
   viewOrder?: number[] | null;
 }
@@ -132,8 +134,36 @@ export interface Invoice {
   issued: string;
   lines: InvoiceLine[];
   payLink: string;
+  /** Set once nothing remains to pay */
   paidOn?: string | null;
   reminders?: number;
+  /** Payments received. Seeded paid invoices have none: paidOn alone means one full payment. */
+  payments?: InvoicePayment[];
+  /** Rupees given up through an early-payment offer */
+  discount?: number;
+  /** An open part-payment request (sent to release a held order) */
+  request?: CollectRequest | null;
+  /** Handed to Razorpay's recovery agent on this date (YYYY-MM-DD) */
+  handedOff?: string;
+}
+
+export interface InvoicePayment {
+  on: string;
+  amount: number;
+  /** Paid after the invoice was past terms */
+  late: boolean;
+}
+
+export interface CollectRequest {
+  kind: 'reminder' | 'partial' | 'discount';
+  sentOn: string;
+  /** partial: amount asked for now */
+  amount?: number;
+  /** discount: percent off for paying in full by `until` */
+  pct?: number;
+  until?: string;
+  /** Set when the requested amount came in; kept for the invoice trail */
+  fulfilledOn?: string;
 }
 
 export interface Session {

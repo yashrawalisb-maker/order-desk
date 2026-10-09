@@ -4,6 +4,7 @@ import { liveStatus, type LiveState } from './lib/api';
 import { load, save } from './state/persist';
 import { reducer, STOP_REASONS } from './state/store';
 import { DocView } from './components/DocView';
+import { ReleaseSheet } from './components/ReleaseSheet';
 import { I } from './components/icons';
 import { StoryPanel } from './components/StoryPanel';
 import { Approved } from './screens/Approved';
@@ -84,6 +85,7 @@ export default function App() {
               </div>
             </div>
           )}
+          {S.sheet === 'release' && o && <ReleaseSheet S={S} o={o} dispatch={dispatch} />}
           {S.sheet === 'profile' && S.session && (
             <div className="scrim" onClick={closeSheet}>
               <div className="sheet" role="dialog" aria-modal="true" aria-labelledby="profile-title">

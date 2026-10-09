@@ -19,7 +19,7 @@ const COPY: Record<string, [string, string]> = {
   done: ['Every order keeps its trail.', 'The original message, the draft and Rajesh’s decision stay together, so “I never ordered that” has an answer.'],
   live: ['Now try it with a real order.', 'Type one the way a kirana owner would. Claude drafts the PO live against the sample catalogue and that retailer’s history.'],
   login: ['Rajesh signs in with his phone.', 'One number, one code. His phone is his office, so Order Desk lives there too.'],
-  dash: ['Every invoice, every rupee still out.', 'Receivables by age and by retailer. Razorpay payment links reconcile on their own, so Rajesh sees who paid without asking.'],
+  dash: ['Use the next order. Hand off the chasing.', 'When an overdue retailer orders again, the order ships against a part-payment through a Razorpay link. Reminders and calls go to Razorpay’s recovery agent, with the retailer’s payment profile attached.'],
   history: ['Every PO and invoice, searchable.', 'The original message, the approved PO, the invoice and the payment stay together, so “I never ordered that” has an answer.'],
   retailers: ['Every retailer, profiled.', 'How each one orders, how fast they pay and what the desk has learned from Rajesh’s decisions, collated in the background from every order and payment.'],
   retailer: ['What’s normal for each retailer.', 'Ordering pattern, payment cycle and credit risk: the profile the desk checks every new order against.'],

@@ -1,6 +1,8 @@
 import { isOpen, rs, unitStr } from '../lib/money';
 import { perWeekLabel, profileOf } from '../lib/profile';
 import { fmtShort } from '../lib/receivables';
+import { overdueCases } from '../lib/overdue';
+import { OverdueCard } from '../components/OverdueCard';
 import { BackButton, Frame, Title, type ScreenProps } from '../components/Chrome';
 import { InvoiceRow } from '../components/InvoiceRow';
 import { chIcon } from '../components/icons';
@@ -10,6 +12,8 @@ const RISK_TONE = { good: 'green', watch: 'amber', hold: 'red' } as const;
 export function RetailerDetail({ S, dispatch, id }: ScreenProps & { id: string }) {
   const p = profileOf(S, id);
   const { r, ordering: ord, payment: pay } = p;
+  const recovery = p.invoices.filter((i) => i.handedOff && !i.paidOn);
+  const cases = overdueCases(S).filter((c) => c.inv.retailer === id);
 
   return (
     <Frame bar={<><BackButton onClick={() => dispatch({ type: 'back' })} label="Back" /><Title h={r.name} sub={`${r.owner} · ${r.area} · GSTIN ${r.gstin}`} /></>}>
@@ -17,6 +21,8 @@ export function RetailerDetail({ S, dispatch, id }: ScreenProps & { id: string }
         <b>{p.risk.label}</b>
         <span>{p.risk.why}</span>
       </div>
+
+      {cases.map((c) => <OverdueCard key={c.inv.no} c={c} dispatch={dispatch} showRetailer={false} />)}
 
       <section className="card">
         <h2>Ordering pattern</h2>
@@ -47,6 +53,7 @@ export function RetailerDetail({ S, dispatch, id }: ScreenProps & { id: string }
           <dt>On time</dt><dd>{pay.paidCount ? `${pay.onTime} of last ${pay.paidCount} paid within terms` : 'No payments in the ledger yet'}</dd>
           {pay.lastPaid && <><dt>Last payment</dt><dd>{pay.lastPaid.inv.no}, {fmtShort(pay.lastPaid.inv.paidOn!)}, in {pay.lastPaid.st.days} days</dd></>}
           <dt>Unpaid now</dt><dd>{pay.outstanding ? rs(pay.outstanding) : 'Nothing'}{pay.dues.amount ? `, ${rs(pay.dues.amount)} overdue` : ''}</dd>
+          {recovery.length > 0 && <><dt>Recovery</dt><dd>{recovery.map((i) => `${i.no} with Razorpay’s recovery agent since ${fmtShort(i.handedOff!)}`).join('; ')}</dd></>}
         </dl>
       </section>
 

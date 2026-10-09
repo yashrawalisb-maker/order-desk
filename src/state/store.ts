@@ -1,7 +1,8 @@
 import { CAT, PO_SEQ_START, RETAILERS, SEED_LEARNED, SEED_ORDERS, seedInvoices } from '../data/seed.js';
 import { flagView, orderFlagView } from '../lib/flags.js';
 import { rateOf, rs, total, unitStr, viewOrderFor } from '../lib/money.js';
-import { daysBetween, duesOf, invState, invTotal, today } from '../lib/receivables.js';
+import { releaseTarget } from '../lib/overdue.js';
+import { daysBetween, duesOf, fmtShort, invRemaining, invState, invTotal, today } from '../lib/receivables.js';
 import type { FlagAction, Invoice, Learned, Line, Order, Session, Topic } from '../types.js';
 
 export type ViewName =
@@ -38,7 +39,7 @@ export interface State {
   orders: Order[];
   invoices: Invoice[];
   learned: Learned[];
-  sheet: 'stop' | 'profile' | null;
+  sheet: 'stop' | 'profile' | 'release' | null;
   doc: DocRef | null;
   toast: Toast | null;
   toastSeq: number;
@@ -76,7 +77,8 @@ export type Action =
   | { type: 'handled' }
   | { type: 'callback' }
   | { type: 'paid'; no: string }
-  | { type: 'remind'; no: string }
+  | { type: 'release'; amount: number }
+  | { type: 'handoff'; no: string }
   | { type: 'doc'; doc: DocRef | null }
   | { type: 'reset' }
   | { type: 'clearToast'; id: number }
@@ -179,6 +181,10 @@ function applyAction(S: State, o: Order, a: FlagAction | { kind: 'ask' | 'skipga
       break;
     case 'skipgap':
       o.gap!.resolved = 'Skipped this time';
+      break;
+    case 'release':
+      // Choose the part-payment amount in a sheet first; see the 'release' action.
+      S.sheet = 'release';
       break;
     case 'hold':
       o.status = 'held';
@@ -345,14 +351,63 @@ export function reducer(prev: State, a: Action): State {
     case 'callback':
       toast(S, `Calling ${R(o!).owner} at ${R(o!).name}…`);
       break;
+    case 'release': {
+      const inv = releaseTarget(S, o!);
+      if (!inv) break;
+      const r = R(o!);
+      const amount = Math.min(Math.max(1, Math.round(a.amount)), invRemaining(inv));
+      o!.status = 'held';
+      o!.stopReason = `Ships when ${rs(amount)} is paid`;
+      o!.release = { invoice: inv.no, amount, sentOn: today() };
+      o!.orderFlag!.resolved = `Ships when ${rs(amount)} of ${inv.no} is paid`;
+      inv.request = { kind: 'partial', amount, sentOn: today() };
+      S.sheet = null;
+      home(S);
+      toast(S, `Part-payment link for ${rs(amount)} sent to ${r.owner}. The ${rs(total(o!))} order ships once it’s paid.`, { head: 'Sent on WhatsApp' });
+      learn(S, o!.retailer, 'credit', `${r.name}: with dues open, you ship his next order against a part-payment (${rs(amount)} of ${rs(invRemaining(inv))}). I’ll suggest the same next time.`);
+      break;
+    }
+    case 'handoff': {
+      const inv = S.invoices.find((x) => x.no === a.no);
+      if (!inv || inv.handedOff || inv.paidOn) break;
+      const r = RETAILERS[inv.retailer];
+      const st = invState(inv);
+      inv.handedOff = today();
+      toast(S, `${inv.no} (${rs(invRemaining(inv))}) handed to Razorpay’s recovery agent with ${r.owner}’s payment profile.`, { head: 'Handed off' });
+      learn(S, inv.retailer, 'payment', `${r.name}: ${inv.no} handed to Razorpay’s recovery agent at ${st.days} days late.`);
+      break;
+    }
     case 'paid': {
       const inv = S.invoices.find((x) => x.no === a.no);
       if (!inv || inv.paidOn) break;
       const st = invState(inv);
-      inv.paidOn = today();
       const r = RETAILERS[inv.retailer];
+      const remaining = invRemaining(inv);
+      const req = inv.request?.kind === 'partial' && !inv.request.fulfilledOn ? inv.request : null;
+      const amount = req ? Math.min(req.amount!, remaining) : remaining;
+      inv.payments = [...(inv.payments ?? []), { on: today(), amount, late: st.status === 'late' }];
+      if (req) req.fulfilledOn = today();
+      if (amount >= remaining) inv.paidOn = today();
+
+      // An order held against this invoice goes back to Rajesh once enough is paid.
+      const held = S.orders.find((x) => x.release?.invoice === inv.no && x.status === 'held');
+      if (held && amount >= held.release!.amount) {
+        held.status = 'draft';
+        held.stopReason = null;
+        held.orderFlag = { type: 'credit', resolved: `${rs(amount)} received ${fmtShort(today())}. Ready to approve.` };
+        held.release = null;
+        if (!held.viewOrder) held.viewOrder = held.lines.map((_, i) => i);
+        toast(S, `${rs(amount)} received from ${r.name}. Their ${rs(total(held))} order is back in Needs you, ready to approve.`, { head: 'Payment received' });
+        learn(S, inv.retailer, 'payment', `${r.name} paid ${rs(amount)} ${daysBetween(req?.sentOn ?? today(), today())} days after the part-payment link, to get his order shipped. Holding the next order works for him.`, true);
+        break;
+      }
+      if (!inv.paidOn) {
+        toast(S, `${rs(amount)} received from ${r.name} against ${inv.no}. ${rs(invRemaining(inv))} still due.`, { head: 'Payment received' });
+        learn(S, inv.retailer, 'payment', `${r.name} paid ${rs(amount)} of ${inv.no} after a part-payment link.`, true);
+        break;
+      }
       const d = daysBetween(inv.issued, inv.paidOn);
-      toast(S, `${inv.no}: ${rs(invTotal(inv))} received from ${r.name}.`, { head: 'Payment received' });
+      toast(S, `${inv.no}: ${rs(amount)} received from ${r.name}.`, { head: 'Payment received' });
       learn(
         S,
         inv.retailer,
@@ -362,13 +417,6 @@ export function reducer(prev: State, a: Action): State {
           : `${r.name} paid ${inv.no} in ${d} day${d === 1 ? '' : 's'} through the Razorpay link. Reconciled in Tally; his lines keep approving untouched.`,
         true,
       );
-      break;
-    }
-    case 'remind': {
-      const inv = S.invoices.find((x) => x.no === a.no);
-      if (!inv) break;
-      inv.reminders = (inv.reminders ?? 0) + 1;
-      toast(S, `Reminder sent to ${RETAILERS[inv.retailer].owner} on WhatsApp with the payment link for ${inv.no}.`, { head: 'Sent on WhatsApp' });
       break;
     }
     case 'doc':

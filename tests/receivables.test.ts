@@ -67,9 +67,6 @@ describe('end to end: login, approve, send, get paid', () => {
     expect(invTotal(inv)).toBe(17140);
     expect(receivables(s.invoices).aging.current.count).toBe(4);
 
-    s = run(s, { type: 'remind', no: 'INV-2519' });
-    expect(s.invoices.find((x) => x.no === 'INV-2519')!.reminders).toBe(1);
-
     s = run(s, { type: 'paid', no: 'INV-2519' });
     expect(invState(s.invoices.find((x) => x.no === 'INV-2519')!)).toMatchObject({ status: 'paid', days: 0 });
     expect(s.learned.at(-1)).toMatchObject({ outcome: true, t: 'Sharma Kirana Store paid INV-2519 in 0 days through the Razorpay link. Reconciled in Tally; his lines keep approving untouched.' });

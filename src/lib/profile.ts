@@ -1,7 +1,7 @@
 import { CAT, RETAILERS } from '../data/seed';
 import type { State } from '../state/store';
 import type { Channel, Learned, Topic } from '../types';
-import { duesOf, invState, invTotal } from './receivables';
+import { duesOf, invRemaining, invState, invTotal } from './receivables';
 import { rs, total } from './money';
 
 // Collates everything the desk knows about one retailer into a profile:
@@ -42,7 +42,7 @@ export function profileOf(S: Pick<State, 'invoices' | 'orders' | 'learned'>, id:
   // Payment cycle
   const paid = invoices.filter((i) => i.paidOn).map((i) => ({ inv: i, st: invState(i) }));
   const onTime = paid.filter((p) => p.st.days <= r.terms).length;
-  const outstanding = invoices.filter((i) => !i.paidOn).reduce((a, i) => a + invTotal(i), 0);
+  const outstanding = invoices.filter((i) => !i.paidOn).reduce((a, i) => a + invRemaining(i), 0);
   const dues = duesOf(S.invoices, id);
   const lastPaid = paid.sort((a, b) => b.inv.paidOn!.localeCompare(a.inv.paidOn!))[0];
 

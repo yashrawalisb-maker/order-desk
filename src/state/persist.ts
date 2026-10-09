@@ -3,7 +3,7 @@ import { fresh, type State } from './store';
 // Saves the demo to this browser so orders, invoices and payments survive a reload.
 // Storage can be missing or full (private windows, previews); the app works without it.
 
-const KEY = 'orderdesk:v3';
+const KEY = 'orderdesk:v4';
 
 type Saved = Pick<State, 'session' | 'orders' | 'invoices' | 'learned' | 'wk' | 'money' | 'poSeq'> & { liveRetailer: string };
 

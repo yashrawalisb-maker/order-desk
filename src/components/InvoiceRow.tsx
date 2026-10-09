@@ -1,7 +1,7 @@
 import type { Dispatch } from 'react';
 import { RETAILERS } from '../data/seed';
 import { rs } from '../lib/money';
-import { fmtShort, invState, invTotal, statusLabel, type InvoiceState } from '../lib/receivables';
+import { fmtShort, invRemaining, invState, invTotal, statusLabel, type InvoiceState } from '../lib/receivables';
 import type { Action } from '../state/store';
 import type { Invoice } from '../types';
 
@@ -19,7 +19,7 @@ export function InvoiceRow({ inv, dispatch, showRetailer = true }: { inv: Invoic
         <span className="rc-sub">{showRetailer ? `${inv.no} · ` : ''}{inv.po.replace('PO GD/24-25/', 'PO ')} · {fmtShort(inv.issued)}</span>
       </span>
       <span className="rc-side">
-        <span className="rc-amt">{rs(invTotal(inv))}</span>
+        <span className="rc-amt">{rs(inv.paidOn ? invTotal(inv) : invRemaining(inv))}</span>
         <PayChip st={st} />
       </span>
     </button>

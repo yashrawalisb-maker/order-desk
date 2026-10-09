@@ -500,3 +500,11 @@ The credit flag now reads New Bharat's dues from the invoice ledger (₹42,300, 
 - **What the desk knows:** learnings grouped by topic, newest first, repeats collapsed.
 
 This overrides the toast behaviour in sections 4.1 and 6.4. The entry texts in 6.4 are unchanged; they appear in the profile instead.
+
+**Overdue money: use the next order, hand off the chasing (9 Oct 2026).** Razorpay already sells recovery agents (loan and subscription recovery), so Order Desk deliberately does not chase: no reminders or calls of its own. It adds what only the order desk has:
+
+- **The next order as leverage.** The credit flag gains "Ship when ₹X is paid". Rajesh picks a quarter, half or all of the overdue invoice and sees the WhatsApp message. Sending holds the new order and sends a part-payment link. When that amount comes in, the order returns to "Needs you", ready to approve; Rajesh still taps Approve.
+- **A hand-off to Razorpay's recovery agent.** Each overdue invoice on the Dashboard can be handed off with the retailer's payment profile attached (days to pay, last late payment, preferred channel, any held order). Simulated in the prototype.
+- **Outcome metric:** "Recovered from overdue, 7 days" on the Dashboard.
+
+Every step is recorded silently in the retailer profile (credit and payments).

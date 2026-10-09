@@ -1,5 +1,5 @@
 import { CAT, RETAILERS, daysAgo } from '../data/seed';
-import type { Invoice, InvoiceLine } from '../types';
+import type { Invoice, InvoiceLine, InvoicePayment } from '../types';
 
 export const today = () => daysAgo(0);
 
@@ -15,7 +15,22 @@ export const addDays = (iso: string, n: number) => {
 export const fmtDate = (iso: string) => toDate(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 export const fmtShort = (iso: string) => toDate(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 
+/** Gross invoice value */
 export const invTotal = (inv: { lines: InvoiceLine[] }) => inv.lines.reduce((a, l) => a + l.rate * l.qty, 0);
+
+/** Payments received; a seeded paid invoice counts as one full payment on its paid date. */
+export function invPayments(inv: Invoice): InvoicePayment[] {
+  if (inv.payments?.length) return inv.payments;
+  if (!inv.paidOn) return [];
+  const dueOn = addDays(inv.issued, RETAILERS[inv.retailer].terms);
+  return [{ on: inv.paidOn, amount: invTotal(inv) - (inv.discount ?? 0), late: inv.paidOn > dueOn }];
+}
+
+/** What is still owed: total less payments and any early-payment discount. */
+export function invRemaining(inv: Invoice): number {
+  if (inv.paidOn) return 0;
+  return Math.max(0, invTotal(inv) - (inv.discount ?? 0) - invPayments(inv).reduce((a, p) => a + p.amount, 0));
+}
 
 export type PayStatus = 'paid' | 'late' | 'due';
 
@@ -48,7 +63,7 @@ export function duesOf(invoices: Invoice[], retailer: string, on = today()): { a
     if (inv.retailer !== retailer) continue;
     const st = invState(inv, on);
     if (st.status === 'late') {
-      amount += invTotal(inv);
+      amount += invRemaining(inv);
       days = Math.max(days, st.days);
     }
   }
@@ -73,11 +88,16 @@ export function receivables(invoices: Invoice[], on = today()) {
   const aging: Record<BucketId, { amount: number; count: number }> = {
     current: { amount: 0, count: 0 }, b1: { amount: 0, count: 0 }, b2: { amount: 0, count: 0 }, b3: { amount: 0, count: 0 },
   };
-  let outstanding = 0, outCount = 0, overdue = 0, overCount = 0, collected7 = 0, paidDays = 0, paidCount = 0;
+  let outstanding = 0, outCount = 0, overdue = 0, overCount = 0, collected7 = 0, recovered7 = 0, paidDays = 0, paidCount = 0;
   for (const inv of invoices) {
     const st = invState(inv, on);
-    const amt = invTotal(inv);
+    const amt = invRemaining(inv);
     const b = bucketOf(st);
+    for (const p of invPayments(inv)) {
+      if (daysBetween(p.on, on) > 7) continue;
+      collected7 += p.amount;
+      if (p.late) recovered7 += p.amount;
+    }
     if (b) {
       aging[b].amount += amt;
       aging[b].count += 1;
@@ -90,10 +110,9 @@ export function receivables(invoices: Invoice[], on = today()) {
     } else {
       paidDays += st.days;
       paidCount += 1;
-      if (daysBetween(inv.paidOn!, on) <= 7) collected7 += amt;
     }
   }
-  return { outstanding, outCount, overdue, overCount, collected7, avgDays: paidCount ? paidDays / paidCount : 0, paidCount, aging };
+  return { outstanding, outCount, overdue, overCount, collected7, recovered7, avgDays: paidCount ? paidDays / paidCount : 0, paidCount, aging };
 }
 
 /** Back-calculate taxable value and CGST/SGST from GST-inclusive line amounts (intra-state supply). */

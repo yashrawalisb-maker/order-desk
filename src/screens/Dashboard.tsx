@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { rs } from '../lib/money';
 import { BUCKETS, bucketOf, invState, receivables, type BucketId } from '../lib/receivables';
+import { overdueCases } from '../lib/overdue';
+import { OverdueCard } from '../components/OverdueCard';
 import { Frame, TabBar, Title, type ScreenProps } from '../components/Chrome';
 import { InvoiceRow } from '../components/InvoiceRow';
 
@@ -27,12 +29,19 @@ function Receivables({ S, dispatch }: ScreenProps) {
       return rank(a) - rank(b) || (a.st.status === 'late' ? b.st.days - a.st.days : a.st.status === 'due' ? a.st.days - b.st.days : b.inv.issued.localeCompare(a.inv.issued));
     });
 
+  const cases = overdueCases(S);
   return (
     <>
-      <div className="kpis">
+      {cases.length > 0 && (
+        <>
+          <div className="pohead" style={{ marginTop: 0 }}><h2>Overdue</h2><span>{cases.length}</span></div>
+          {cases.map((c) => <OverdueCard key={c.inv.no} c={c} dispatch={dispatch} />)}
+        </>
+      )}
+      <div className="kpis" style={{ marginTop: cases.length ? 14 : 0 }}>
         <div className="kpi"><span className="k-label">Outstanding</span><span className="k-val">{rs(R.outstanding)}</span><span className="k-sub">{R.outCount} invoices unpaid</span></div>
         <div className="kpi"><span className="k-label">Overdue</span><span className="k-val">{rs(R.overdue)}</span><span className="k-sub">{R.overCount ? `${R.overCount} past 21-day terms` : 'Nothing late'}</span></div>
-        <div className="kpi"><span className="k-label">Collected, last 7 days</span><span className="k-val">{rs(R.collected7)}</span><span className="k-sub">Through Razorpay links</span></div>
+        <div className="kpi"><span className="k-label">Recovered from overdue, 7 days</span><span className="k-val">{rs(R.recovered7)}</span><span className="k-sub">{rs(R.collected7)} collected in all</span></div>
         <div className="kpi"><span className="k-label">Average days to pay</span><span className="k-val">{R.avgDays.toFixed(1)}</span><span className="k-sub">On 21-day terms</span></div>
       </div>
 

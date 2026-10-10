@@ -524,10 +524,21 @@ Every screen has one job, one primary action, and information ranked by whether 
 | Orders card | Decide if this order needs him | Review order | Retailer, total, the named problem ("Surf Excel 1kg · unusual qty", "₹42,300 overdue") | Items and quantities, what was sent | Channel, time, owner, area; done orders (end card) |
 | Draft PO | Fix what needs him, then approve | Approve PO (locked until checks are done) | "Needs you": credit flag, growth nudge, flagged and unclear lines with their reasons | Lines that look fine, as compact rows; the original message | Full voice transcript |
 | Approved | Send | Send invoice and link | PO number, who it goes to | Invoice, PO, payment link as rows | Documents, WhatsApp preview |
-| Live order | Try a real order | Draft the PO | Retailer choice, order text | Their usual order | — |
+| Retailer chat | Play the retailer: send an order, then pay | Send; Pay on the link card | The thread: their orders, then the invoice, link and requests that came back | Where each order is in Order Desk | Sample messages, switching retailer |
 | Money | Get overdue money back | Ship the waiting order against a part-payment, or hand off | Overdue retailer, amount, days late | Unpaid by age; recovered this week | What the recovery agent receives; all invoices (search) |
 | Invoice | Track to paid | Hand off / payment (simulated) | Amount still due, status | Timeline | Documents, retailer profile, hand-off pack |
 | Retailers | Spot who needs attention | Open a retailer | "Needs attention" group: risk label | Days to pay, unpaid | Everything else in the profile |
 | Retailer profile | Judge credit before shipping | Act on the overdue card | Risk banner and why | Ordering, payments (folded, key fact in the header) | What the desk knows, invoices |
 
 Rule for new screens: name the job and the primary action first; give the primary info the top of the screen; fold anything a first-time look doesn't need.
+
+## 15. Addendum: how orders arrive (10 Oct 2026)
+
+Retailers don't install anything. They keep ordering the way they do today: a WhatsApp text, voice note or chit photo to the distributor's number, or a call to the salesman. Everything they get back also arrives on WhatsApp.
+
+- **Real product, v1:** Rajesh forwards orders to an Order Desk WhatsApp number (or adds it to his order group). No change for retailers.
+- **Later:** the distributor's own number on the WhatsApp Business API, so orders arrive with no forwarding and the echo and payment link go out from the same number.
+- **Prototype:** the "Retailer chat" screen stands in for the retailer's WhatsApp (button "As retailer" on Orders). Pick Ramesh, Suresh or Mahesh and send an order. Then, as Rajesh, approve and send it. The invoice and the Razorpay link come back to the same chat, as does any part-payment request from "Ship when ₹X is paid", and "Pay" settles it. The thread is one log in the store (`wa`), written by the reducer on each order, Send, part-payment request and payment.
+- **Messages:** every outgoing message is a template filled from the ledger (`src/lib/messages.ts`), never AI.
+- **Sample messages:** they carry stand-in model replies, run through the same `fromAI` guards. That way the demo still drafts when `ANTHROPIC_API_KEY` is not set; free text and photos need live drafting on.
+

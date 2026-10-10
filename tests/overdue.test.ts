@@ -64,10 +64,12 @@ describe('overdue: use the next order, hand off the chasing', () => {
 });
 
 describe('navigation', () => {
-  it('Back from a live draft returns to Orders, not the form', () => {
+  it('An order sent from the retailer chat stays in the chat; Back from the draft returns there', () => {
     const order = { id: 'L1', retailer: 'sharma', channel: 'text' as const, at: '5:00 pm', status: 'draft' as const, live: true, raw: 'x', lines: [] };
-    let s = run(fresh(), { type: 'go', view: { name: 'live' } }, { type: 'liveAdd', order });
-    expect(s.view).toEqual({ name: 'po', id: 'L1' });
+    let s = run(fresh(), { type: 'go', view: { name: 'chat' } }, { type: 'liveAdd', order });
+    expect(s.view).toEqual({ name: 'chat' });
+    s = run(s, { type: 'open', id: 'L1' }, { type: 'back' });
+    expect(s.view).toEqual({ name: 'chat' });
     s = run(s, { type: 'back' });
     expect(s.view).toEqual({ name: 'inbox' });
   });

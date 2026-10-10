@@ -5,7 +5,7 @@ import { fresh, type State } from './store';
 
 const KEY = 'orderdesk:v4';
 
-type Saved = Pick<State, 'session' | 'orders' | 'invoices' | 'learned' | 'wk' | 'money' | 'poSeq'> & { liveRetailer: string };
+type Saved = Pick<State, 'session' | 'orders' | 'invoices' | 'learned' | 'wk' | 'money' | 'poSeq' | 'wa'> & { liveRetailer: string };
 
 export function save(S: State, store: Storage | undefined = globalThis.localStorage): void {
   const data: Saved = {
@@ -17,6 +17,7 @@ export function save(S: State, store: Storage | undefined = globalThis.localStor
     wk: S.wk,
     money: S.money,
     poSeq: S.poSeq,
+    wa: S.wa,
     liveRetailer: S.live.retailer,
   };
   try {
@@ -42,6 +43,7 @@ export function load(store: Storage | undefined = globalThis.localStorage): Stat
       wk: d.wk ?? base.wk,
       money: d.money ?? base.money,
       poSeq: d.poSeq ?? base.poSeq,
+      wa: Array.isArray(d.wa) ? d.wa : base.wa,
       live: { ...base.live, retailer: d.liveRetailer ?? base.live.retailer },
     };
   } catch {

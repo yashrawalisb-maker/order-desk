@@ -1,12 +1,13 @@
 import { CAT, PO_SEQ_START, RETAILERS, SEED_LEARNED, SEED_ORDERS, seedInvoices } from '../data/seed.js';
 import { flagView, orderFlagView } from '../lib/flags.js';
 import { attentionFor, rateOf, rs, total, unitStr, viewOrderFor } from '../lib/money.js';
-import { releaseTarget } from '../lib/overdue.js';
+import { invoiceText, receiptText, seedThread } from '../lib/messages.js';
+import { releaseMessage, releaseTarget } from '../lib/overdue.js';
 import { daysBetween, duesOf, fmtShort, invRemaining, invState, invTotal, today } from '../lib/receivables.js';
-import type { FlagAction, Invoice, Learned, Line, Order, Session, Topic } from '../types.js';
+import type { FlagAction, Invoice, Learned, Line, Order, Session, Topic, WaMsg } from '../types.js';
 
 export type ViewName =
-  | 'inbox' | 'live' | 'dash' | 'retailers'
+  | 'inbox' | 'chat' | 'dash' | 'retailers'
   | 'po' | 'approved' | 'human' | 'done' | 'retailer' | 'invoice';
 export interface View {
   name: ViewName;
@@ -50,6 +51,8 @@ export interface State {
   money: { leak: number; held: number; asked: number };
   poSeq: number;
   live: LiveForm;
+  /** Each retailer's WhatsApp thread with the distributor */
+  wa: WaMsg[];
 }
 
 export type Action =
@@ -104,6 +107,7 @@ export const fresh = (): State => ({
   money: { leak: 2140, held: 0, asked: 0 },
   poSeq: PO_SEQ_START,
   live: { retailer: 'sharma', text: '', busy: false, error: '' },
+  wa: seedThread(),
 });
 
 export const nowT = () => new Date().toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' }).toLowerCase();
@@ -119,6 +123,10 @@ function toast(S: State, t: string, opts: { head?: string; learn?: boolean } = {
 function learn(S: State, retailer: string, topic: Topic, t: string, outcome = false) {
   S.learned.push({ t, at: 'Today, ' + nowT(), retailer, topic, ...(outcome ? { outcome: true } : {}) });
   S.pulse = Date.now();
+}
+
+function message(S: State, m: Omit<WaMsg, 'id' | 'at'>) {
+  S.wa.push({ ...m, id: (S.wa.at(-1)?.id ?? 0) + 1, at: nowT() });
 }
 
 function go(S: State, view: View) {
@@ -338,6 +346,7 @@ export function reducer(prev: State, a: Action): State {
           payLink: o!.payLink!, paidOn: null,
         });
       }
+      message(S, { retailer: o!.retailer, from: 'desk', kind: 'invoice', orderId: o!.id, invNo: o!.invNo!, amount: total(o!), text: invoiceText(o!) });
       home(S);
       toast(S, `Invoice ${o!.invNo} and payment link sent to ${r.name}${o!.echo ? ' with an order echo' : ''}.`, { head: 'Sent on WhatsApp' });
       for (const l of edits) {
@@ -358,6 +367,7 @@ export function reducer(prev: State, a: Action): State {
       if (!inv) break;
       const r = R(o!);
       const amount = Math.min(Math.max(1, Math.round(a.amount)), invRemaining(inv));
+      message(S, { retailer: o!.retailer, from: 'desk', kind: 'ask', orderId: o!.id, invNo: inv.no, amount, text: releaseMessage(o!, inv, amount) });
       o!.status = 'held';
       o!.stopReason = `Ships when ${rs(amount)} is paid`;
       o!.release = { invoice: inv.no, amount, sentOn: today() };
@@ -393,7 +403,9 @@ export function reducer(prev: State, a: Action): State {
 
       // An order held against this invoice goes back to Rajesh once enough is paid.
       const held = S.orders.find((x) => x.release?.invoice === inv.no && x.status === 'held');
-      if (held && amount >= held.release!.amount) {
+      const released = !!held && amount >= held.release!.amount;
+      message(S, { retailer: inv.retailer, from: 'desk', kind: 'receipt', invNo: inv.no, amount, text: receiptText(inv, amount, released) });
+      if (held && released) {
         held.status = 'draft';
         held.stopReason = null;
         held.orderFlag = { type: 'credit', resolved: `${rs(amount)} received ${fmtShort(today())}. Ready to approve.` };
@@ -432,9 +444,9 @@ export function reducer(prev: State, a: Action): State {
       a.order.attention = attentionFor(a.order);
       S.orders.unshift(a.order);
       S.live = { ...S.live, busy: false, text: '', error: '' };
-      // The draft replaces the form, so Back returns to where the live order was started.
-      if (S.view.name === 'live') S.view = { name: 'po', id: a.order.id };
-      else go(S, { name: 'po', id: a.order.id });
+      // The retailer's message stays in their chat; the draft waits in Rajesh's Orders.
+      message(S, { retailer: a.order.retailer, from: 'retailer', kind: 'order', orderId: a.order.id });
+      if (S.view.name !== 'chat') go(S, { name: 'po', id: a.order.id });
       break;
   }
   return S;

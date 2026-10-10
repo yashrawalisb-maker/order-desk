@@ -172,3 +172,19 @@ export interface Session {
   phone: string;
   name: string;
 }
+
+/** One message in a retailer's WhatsApp thread with the distributor. */
+export interface WaMsg {
+  id: number;
+  retailer: string;
+  from: 'retailer' | 'desk';
+  /** Time of day, e.g. "9:12 am" */
+  at: string;
+  /** order: the retailer's order; invoice: invoice and payment link; ask: part-payment request; receipt: payment received */
+  kind: 'order' | 'invoice' | 'ask' | 'receipt';
+  orderId?: string;
+  invNo?: string;
+  amount?: number;
+  /** Desk messages keep the text as sent */
+  text?: string;
+}

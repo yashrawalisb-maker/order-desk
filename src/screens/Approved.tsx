@@ -1,15 +1,9 @@
-import { CAT, RETAILERS } from '../data/seed';
-import { rs, total, unitStr } from '../lib/money';
+import { RETAILERS } from '../data/seed';
+import { echoText } from '../lib/messages';
+import { rs, total } from '../lib/money';
 import type { Order } from '../types';
 import { BackButton, Frame, Title, type ScreenProps } from '../components/Chrome';
 import { I } from '../components/icons';
-
-export function echoText(o: Order): string {
-  const r = RETAILERS[o.retailer];
-  const items = o.lines.map((l) => `• ${CAT[l.sku!].short} × ${l.qty} ${unitStr(CAT[l.sku!].unit, l.qty)}`).join('\n');
-  const ask = o.gap && o.gap.ask ? `\n${CAT[o.gap.sku].short} bhi bhejein? It’s usually in your weekly order.` : '';
-  return `Namaste ${r.owner} ji. Your order with Gupta Distributors:\n${items}\nTotal ${rs(total(o))}. Pay here: ${o.payLink}${ask}\nAnything wrong? Reply before 4 pm dispatch.`;
-}
 
 export function Approved({ dispatch, o }: ScreenProps & { o: Order }) {
   const r = RETAILERS[o.retailer];

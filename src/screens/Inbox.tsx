@@ -85,7 +85,7 @@ export function Inbox({ S, dispatch }: ScreenProps) {
       bar={
         <>
           <div className="grow"><h1>Order desk</h1><div className="sub">{rs(S.money.leak + S.money.held)} protected this week</div></div>
-          <button className="btn small" onClick={() => dispatch({ type: 'go', view: { name: 'live' } })}>{I.plus()} Live order</button>
+          <button className="btn small" onClick={() => dispatch({ type: 'go', view: { name: 'chat' } })}>{I.chat()} As retailer</button>
           <button className="avatar" onClick={() => dispatch({ type: 'profile' })} aria-label="Account: Rajesh Gupta">RG</button>
         </>
       }
@@ -101,7 +101,7 @@ export function Inbox({ S, dispatch }: ScreenProps) {
         <p className="dc-sub">New orders appear here the moment they arrive.</p>
         <div className="dc-foot">
           {doneCount > 0 && <button className="btn wide" onClick={() => dispatch({ type: 'tab', v: 'dash', id: 'today' })}>Done today · {doneCount}</button>}
-          <button className="btn wide" onClick={() => dispatch({ type: 'go', view: { name: 'live' } })}>Try a live order</button>
+          <button className="btn wide" onClick={() => dispatch({ type: 'go', view: { name: 'chat' } })}>Send an order as a retailer</button>
         </div>
       </article>
     </Frame>

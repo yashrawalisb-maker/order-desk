@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { flagView, orderFlagView } from '../src/lib/flags';
 import { rs, total } from '../src/lib/money';
-import { echoText } from '../src/screens/Approved';
+import { echoText } from '../src/lib/messages';
 import { fresh, reducer, type Action, type State } from '../src/state/store';
 
 const run = (s: State, ...actions: Action[]) => actions.reduce(reducer, s);

@@ -17,6 +17,7 @@ The full spec is `docs/PRD.md`. This file condenses the parts you need on every 
 - `src/lib/receivables.ts`: invoice status, dues, ageing, GST split, amount in words. `src/data/seed.ts` `seedInvoices()` is the ledger behind the dashboard; New Bharat's dues come from it.
 - `src/lib/profile.ts`: collates each retailer's profile (ordering pattern, payment cycle, credit risk, and Learned entries grouped by topic). Learning is silent: `learn()` in the store records `{retailer, topic}` and never toasts.
 - `src/lib/overdue.ts`: overdue cases, the hand-off pack for Razorpay's recovery agent, and part-payment release options. Order Desk never chases; it holds the next order against a part-payment and hands chasing off.
+- `src/lib/messages.ts`, `src/screens/Chat.tsx`, `src/data/samples.ts`: the retailer's WhatsApp stand-in (PRD section 15). Orders go in; the echo, payment link, part-payment request and receipt come back as template messages, never AI. The thread is `S.wa`, appended by the reducer.
 - `src/components/DocView.tsx`: printable PO and tax invoice (print CSS gives the PDF).
 - `src/state/store.ts`: one `useReducer` store. Every action from PRD section 6.3 and every Learned entry from section 6.4 is here. The reducer clones state, then mutates the clone.
 - `src/screens/`, `src/components/`: React views. `src/styles/tokens.css` holds the colour tokens.

@@ -17,7 +17,7 @@ const COPY: Record<string, [string, string]> = {
   approved: ['One tap: invoice and Razorpay payment link.', 'The approved PO becomes the invoice, so what was ordered is what gets billed. The WhatsApp echo lets the retailer catch a mistake before the van leaves.'],
   human: ['When it can’t read an order, it doesn’t guess.', 'Unclear orders land in “Needs you” with the raw message. That’s today’s workflow, so no order is lost.'],
   done: ['Every order keeps its trail.', 'The original message, the draft and Rajesh’s decision stay together, so “I never ordered that” has an answer.'],
-  live: ['Now try it with a real order.', 'Type one the way a kirana owner would. Claude drafts the PO live against the sample catalogue and that retailer’s history.'],
+  chat: ['Retailers keep ordering on WhatsApp.', 'Play the retailer: send a text, voice note or chit photo. It lands in Rajesh’s Orders as a draft PO. The invoice, the Razorpay link and any part-payment request come back to the same chat.'],
   login: ['Rajesh signs in with his phone.', 'One number, one code. His phone is his office, so Order Desk lives there too.'],
   dash: ['Use the next order. Hand off the chasing.', 'When an overdue retailer orders again, the order ships against a part-payment through a Razorpay link. Reminders and calls go to Razorpay’s recovery agent, with the retailer’s payment profile attached.'],
   retailers: ['Every retailer, profiled.', 'How each one orders, how fast they pay and what the desk has learned from Rajesh’s decisions, collated in the background from every order and payment.'],
@@ -43,7 +43,7 @@ export function StoryPanel({ S, dispatch }: ScreenProps) {
     if (v === 'po') return i < 4 ? 'done' : i === 4 ? 'on' : '';
     if (v === 'approved') return i < 5 ? 'done' : i === 5 ? 'on' : '';
     if (v === 'done') return i < 6 ? 'done' : '';
-    if (v === 'live') return S.live.busy ? (i < 4 ? 'on' : '') : '';
+    if (v === 'chat') return S.live.busy ? (i < 4 ? 'on' : '') : '';
     if (v === 'retailers') return i === 6 ? 'on' : '';
     if (v === 'invoice') return i < 6 ? 'done' : '';
     if (v === 'dash') return i === 5 ? 'on' : i < 5 ? 'done' : '';

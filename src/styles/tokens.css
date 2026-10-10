@@ -6,7 +6,7 @@
   --green:#12764F; --green-soft:#E2F3EB;
   --paper:#FFFCEB; --rule:#BCD0EA; --margin:#F0A8A8; --pen:#22389A; --pen-ui:#22389A;
   --frame:#0E1B33;
-  --echo:#DCF7E3; --echo-ink:#10291A;
+  --echo:#DCF7E3; --echo-ink:#10291A; --wa-bg:#ECE6DD; --wa:#0B6E39;
   --sans:"Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --hand:"Kalam", "Comic Sans MS", "Segoe Print", cursive;
   color-scheme:light;
@@ -20,6 +20,7 @@
     --green:#5ACB9C; --green-soft:#11301F;
     --paper:#F3EED6; --rule:#AFC3DE; --margin:#E39B9B; --pen:#22389A; --pen-ui:#9DB2FF;
     --frame:#2A3447;
+    --echo:#1E3D2C; --echo-ink:#DDF3E5; --wa-bg:#0B141A; --wa:#3FCF85;
     color-scheme:dark;
   }
 }
@@ -31,5 +32,6 @@
   --green:#5ACB9C; --green-soft:#11301F;
   --paper:#F3EED6; --rule:#AFC3DE; --margin:#E39B9B; --pen:#22389A; --pen-ui:#9DB2FF;
   --frame:#2A3447;
+  --echo:#1E3D2C; --echo-ink:#DDF3E5; --wa-bg:#0B141A; --wa:#3FCF85;
   color-scheme:dark;
 }
